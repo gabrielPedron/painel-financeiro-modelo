@@ -1,4 +1,5 @@
--- Base do banco: gerada por scripts/gerar-base.mjs. Não edite à mão; mude a origem e gere de novo.
+-- Base do banco: o ponto de partida do sistema. Deixe este arquivo como está;
+-- toda mudança no banco entra como migração nova (ver AGENTS.md).
 --
 -- Extensões que o sistema usa e que um projeto novo do Supabase não traz ligadas.
 --   pg_cron  : agendador (chama o app de tempos em tempos)
