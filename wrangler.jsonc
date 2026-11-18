@@ -1,0 +1,20 @@
+// Config do Worker na Cloudflare. O build (nitro) mescla este arquivo no
+// .output/server/wrangler.json; `main` e `assets` são definidos pelo build.
+// Segredos NUNCA entram aqui: SUPABASE_SERVICE_ROLE_KEY e ML_CRON_SECRET são gravados
+// por `node scripts/configurar.mjs`; OPENAI_API_KEY e TELEGRAM_BOT_TOKEN são opcionais
+// (`npx wrangler secret put NOME`).
+{
+  // Troque pelo nome do seu sistema (letras minúsculas, números e hífen).
+  "name": "NOME-DO-SEU-SISTEMA",
+  "observability": { "enabled": true },
+  // Exige o plano pago do Workers: a sincronização lê páginas de 1.000 registros do
+  // faturamento do Mercado Livre e passa do limite de CPU do plano gratuito. 300 s é o teto.
+  "limits": { "cpu_ms": 300000 },
+  "vars": {
+    // Valores públicos do seu projeto Supabase (os mesmos do .env).
+    "SUPABASE_URL": "https://SEU_PROJECT_REF.supabase.co",
+    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_...",
+    // Endereço público do app, sem barra no final. Só existe depois da primeira publicação.
+    "APP_BASE_URL": ""
+  }
+}
