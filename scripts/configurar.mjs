@@ -35,7 +35,8 @@ function parar(mensagem) {
 
 function gravarSegredoNoWorker(nome, valor) {
   // O valor entra pela entrada padrão: não aparece na linha de comando nem na tela.
-  const r = spawnSync("npx", ["wrangler", "secret", "put", nome], { input: valor, shell: true, encoding: "utf8" });
+  // Comando numa linha só (o nome é fixo, vem deste arquivo): com shell e lista de argumentos o Node avisa DEP0190.
+  const r = spawnSync(`npx wrangler secret put ${nome}`, { input: valor, shell: true, encoding: "utf8" });
   if (r.status !== 0) {
     const erro = `${r.stderr ?? ""}${r.stdout ?? ""}`.split(valor).join("***").trim().split("\n").slice(-6).join("\n");
     parar(`não gravei ${nome} no Worker. Rode "npx wrangler login" e publique o app uma vez antes.\n${erro}`);
