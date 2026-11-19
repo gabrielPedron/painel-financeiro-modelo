@@ -3410,7 +3410,7 @@ BEGIN
   RETURN QUERY
   WITH ord AS (
     SELECT o.id, o.account_id, o.order_id, o.date_created, o.status, o.total_amount,
-           COALESCE(o.refunded_amount, 0) AS refunded_amount,
+           COALESCE(o.refunded_amount, 0) AS refunded_amount, o.shipping_id,
            ((o.date_created AT TIME ZONE 'America/Sao_Paulo')::date) AS day_sp
     FROM public.ml_orders o
     WHERE o.account_id = ANY(_account_ids)
@@ -3511,6 +3511,19 @@ BEGIN
     FROM bill_balde bb
     GROUP BY bb.account_id, bb.order_id
   ),
+  -- Envios cujo frete o ML já cobrou num pedido (fix 18/11/2026). No pacote com mais de um pedido e um envio só,
+  -- o ML cobra o frete uma vez, num pedido, e o Mercado Pago pode pôr o shipping_fee no pagamento de outro.
+  -- Sem isto, o pedido sem a linha caía na troca para o pagamento e o frete saía em dobro (RP, envio 48223203943).
+  envio_frete AS (
+    SELECT DISTINCT d.account_id, d.shipping_id
+    FROM public.ml_billing_details d
+    JOIN public.billing_subtype_map m ON m.sub_type = d.detail_sub_type
+    WHERE d.account_id = ANY(_account_ids)
+      AND d.shipping_id IN (SELECT o.shipping_id FROM ord o WHERE o.shipping_id IS NOT NULL)
+      AND d.order_id IS NOT NULL
+      AND d.detail_type = 'CHARGE'
+      AND m.category = 'frete'
+  ),
   ads_day AS (
     SELECT ad.account_id, ad.date, ad.item_id, SUM(ad.cost)::numeric AS cost
     FROM public.ml_ads_daily ad
@@ -3553,16 +3566,18 @@ BEGIN
            CASE WHEN COALESCE(bb.has_comissao,false) THEN bb.fee_comissao ELSE COALESCE(pp.ml_fee,0) END AS fee_comissao,
            CASE WHEN COALESCE(bb.has_cobranca,false) THEN bb.fee_cobranca ELSE COALESCE(pp.mp_fee,0) END AS fee_cobranca,
            CASE WHEN COALESCE(bb.has_parcelamento,false) THEN bb.fee_parcelamento ELSE COALESCE(pp.installment_fee,0) END AS fee_parcelamento,
-           CASE WHEN COALESCE(bb.has_frete,false) THEN bb.fee_frete ELSE COALESCE(pp.shipping_fee,0) END AS fee_frete,
+           CASE WHEN COALESCE(bb.has_frete,false) THEN bb.fee_frete
+                WHEN ef.shipping_id IS NOT NULL THEN 0
+                ELSE COALESCE(pp.shipping_fee,0) END AS fee_frete,
            COALESCE(bb.fee_outros,0) AS fee_outros,
            CASE WHEN NOT COALESCE(bb.has_comissao,false) AND COALESCE(pp.ml_fee,0) > 0 THEN 'pagamento' ELSE 'billing' END::text AS fee_comissao_origem,
            CASE WHEN NOT COALESCE(bb.has_cobranca,false) AND COALESCE(pp.mp_fee,0) > 0 THEN 'pagamento' ELSE 'billing' END::text AS fee_cobranca_origem,
            CASE WHEN NOT COALESCE(bb.has_parcelamento,false) AND COALESCE(pp.installment_fee,0) > 0 THEN 'pagamento' ELSE 'billing' END::text AS fee_parcelamento_origem,
-           CASE WHEN NOT COALESCE(bb.has_frete,false) AND COALESCE(pp.shipping_fee,0) > 0 THEN 'pagamento' ELSE 'billing' END::text AS fee_frete_origem,
+           CASE WHEN NOT COALESCE(bb.has_frete,false) AND ef.shipping_id IS NULL AND COALESCE(pp.shipping_fee,0) > 0 THEN 'pagamento' ELSE 'billing' END::text AS fee_frete_origem,
            ((NOT COALESCE(bb.has_comissao,false) AND COALESCE(pp.ml_fee,0) > 0)
             OR (NOT COALESCE(bb.has_cobranca,false) AND COALESCE(pp.mp_fee,0) > 0)
             OR (NOT COALESCE(bb.has_parcelamento,false) AND COALESCE(pp.installment_fee,0) > 0)
-            OR (NOT COALESCE(bb.has_frete,false) AND COALESCE(pp.shipping_fee,0) > 0)) AS fees_fallback,
+            OR (NOT COALESCE(bb.has_frete,false) AND ef.shipping_id IS NULL AND COALESCE(pp.shipping_fee,0) > 0)) AS fees_fallback,
            (bb.order_id IS NULL) AS fees_billing_missing,
            tx.rate AS tax_rate,
            COALESCE(ao.ads, 0) AS ads_rateado
@@ -3570,6 +3585,7 @@ BEGIN
     LEFT JOIN it ON it.order_ref = o.id
     LEFT JOIN pay pp ON pp.account_id = o.account_id AND pp.order_id = o.order_id
     LEFT JOIN bill bb ON bb.account_id = o.account_id AND bb.order_id = o.order_id
+    LEFT JOIN envio_frete ef ON ef.account_id = o.account_id AND ef.shipping_id = o.shipping_id
     LEFT JOIN ads_order ao ON ao.order_ref = o.id
     LEFT JOIN LATERAL (
       SELECT t.rate FROM public.account_tax_rates t

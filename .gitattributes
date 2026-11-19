@@ -1,1 +1,2 @@
 *.sh text eol=lf
+src/routeTree.gen.ts text eol=lf
