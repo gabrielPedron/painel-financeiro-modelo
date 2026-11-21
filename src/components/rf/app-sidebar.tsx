@@ -17,6 +17,7 @@ import {
   ReceiptText,
   Scale,
   Menu,
+  TrendingUp,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -65,6 +66,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "Mercado Livre", url: "/mercado-livre", icon: ShoppingCart },
       { title: "Anúncios", url: "/anuncios", icon: Tags },
+      { title: "Ajuste de preço", url: "/ajuste-preco", icon: TrendingUp },
       { title: "Conciliação", url: "/conciliacao", icon: Scale },
       { separator: true },
       { title: "Shopee", url: "/shopee", icon: ShoppingBag },

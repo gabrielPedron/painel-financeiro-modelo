@@ -14,6 +14,11 @@ passos em ordem. Cada passo termina num **Pronto quando**: só avance depois de 
 - Valores **públicos** podem aparecer na conversa: project ref, URL do Supabase, chave
   `sb_publishable_...`, endereço do app, Client ID do Mercado Livre.
 - O sistema só **lê** a conta do Mercado Livre. Nenhum passo pede permissão de escrita.
+- **Windows:** quando o dono digitar no PowerShell um comando que começa com `npx`, peça que
+  ele escreva `npx.cmd` no lugar de `npx` (o resto do comando é igual). O PowerShell vem com
+  scripts bloqueados e o `npx` comum falha com "a execução de scripts foi desabilitada". Deixe a
+  política de execução do Windows como está: o `npx.cmd` resolve sem mexer nela. O PowerShell
+  comum basta; o de administrador não é necessário.
 
 Se um comando falhar de um jeito que a seção [Se travar](#se-travar) não cobre: pare, mostre o
 erro exato (sem segredo) e pergunte. Seguir adiante com um passo quebrado custa mais que parar.
@@ -86,7 +91,12 @@ npx supabase db push --remote
 
 O `link` e o `db push` pedem a senha do banco do passo 2. O `db push` aplica uma migração
 única, `supabase/migrations/20260101000000_base.sql`: tabelas, funções, permissões,
-classificação das cobranças do Mercado Livre e agendamentos.
+classificação das cobranças do Mercado Livre e agendamentos. Leva poucos segundos.
+
+Se quem roda o `db push` é você (IA), a ferramenta percebe e recusa gravar sem confirmação
+(`Confirmation required ... running in agent mode`). Rode antes `npx supabase db push --remote --dry-run`,
+mostre ao dono que ele aplica só `20260101000000_base.sql` num projeto vazio, e com o sim dele
+rode `npx supabase db push --remote --yes`.
 
 **Pronto quando:** `npx supabase migration list --remote` mostra `20260101000000` nas duas
 colunas (local e remoto).
@@ -181,6 +191,9 @@ Depois disso, siga a seção "Primeiros dias" do `README.md`: custo dos produtos
 
 | O que aparece | O que é | O que fazer |
 |---|---|---|
+| `npx.ps1 não pode ser carregado` ou `a execução de scripts foi desabilitada` | PowerShell do Windows com scripts bloqueados | Repetir o comando com `npx.cmd` no lugar de `npx` |
+| `Confirmation required ... agent mode` no `db push` | A IA rodou o comando e a ferramenta pede confirmação | `--dry-run` primeiro, mostrar ao dono, depois `--yes` |
+| `could not translate host name` ou `Network is unreachable` ao falar com o banco | A conexão direta do Supabase gratuito é só IPv6, e a rede do computador está sem IPv6 | Usar o pooler, como mostra **Connect** no painel do projeto (endereço `aws-...pooler.supabase.com`, usuário `postgres.<project ref>`) |
 | `Cannot find project ref` | O `link` do passo 3 não rodou nesta pasta | Rodar `npx supabase link --project-ref <ref>` |
 | Erro de limite de CPU no `wrangler deploy` | Plano gratuito do Workers | Ativar o plano pago na Cloudflare e publicar de novo |
 | `APP_BASE_URL não configurada` ao conectar o Mercado Livre | Faltou a segunda publicação do passo 5 | Preencher `APP_BASE_URL` e publicar de novo |

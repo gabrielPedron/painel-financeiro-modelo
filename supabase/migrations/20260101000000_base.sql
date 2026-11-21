@@ -69,6 +69,49 @@ $$;
 
 
 --
+-- Name: ajuste_preco_gravar_leitura(uuid, jsonb); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.ajuste_preco_gravar_leitura(_account_id uuid, _leituras jsonb) RETURNS integer
+    LANGUAGE sql
+    SET search_path TO 'public'
+    AS $_$
+  WITH l AS (
+    SELECT DISTINCT ON (x.item_id) x.*
+    FROM jsonb_to_recordset(COALESCE(_leituras, '[]'::jsonb)) AS x(item_id text, cheio numeric,
+      cheio_alterado_em timestamptz, promocao_preco numeric, promocao_fim timestamptz, promocao_tipo text,
+      promocao_campanha text)
+    WHERE x.item_id ~ '^MLB[0-9]+$' AND x.cheio > 0
+    ORDER BY x.item_id
+  ),
+  g AS (
+    INSERT INTO public.ajuste_preco AS a (account_id, item_id, cheio_base, data_base, cheio_lido, cheio_alterado_em,
+      promocao_preco, promocao_fim, promocao_tipo, promocao_campanha, lido_em)
+    SELECT _account_id, l.item_id, round(l.cheio, 2), (now() AT TIME ZONE 'America/Sao_Paulo')::date, round(l.cheio, 2),
+      l.cheio_alterado_em, CASE WHEN l.promocao_preco > 0 THEN round(l.promocao_preco, 2) END,
+      CASE WHEN l.promocao_preco > 0 THEN l.promocao_fim END,
+      CASE WHEN l.promocao_preco > 0 THEN l.promocao_tipo END,
+      CASE WHEN l.promocao_preco > 0 THEN l.promocao_campanha END, now()
+    FROM l
+    ON CONFLICT (account_id, item_id) DO UPDATE SET
+      cheio_lido = EXCLUDED.cheio_lido, cheio_alterado_em = EXCLUDED.cheio_alterado_em,
+      promocao_preco = EXCLUDED.promocao_preco, promocao_fim = EXCLUDED.promocao_fim,
+      promocao_tipo = EXCLUDED.promocao_tipo, promocao_campanha = EXCLUDED.promocao_campanha,
+      lido_em = EXCLUDED.lido_em
+    RETURNING 1
+  )
+  SELECT count(*)::integer FROM g;
+$_$;
+
+
+--
+-- Name: FUNCTION ajuste_preco_gravar_leitura(_account_id uuid, _leituras jsonb); Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON FUNCTION public.ajuste_preco_gravar_leitura(_account_id uuid, _leituras jsonb) IS 'Grava a leitura de preço do ML em ajuste_preco (só service_role). Anúncio sem linha ganha a base no cheio lido, no dia de hoje em Brasília; a base existente não muda.';
+
+
+--
 -- Name: anuncios_margem(uuid[], date, date); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -183,6 +226,80 @@ $$;
 --
 
 COMMENT ON FUNCTION public.anuncios_margem(_account_ids uuid[], _from date, _to date) IS 'Regime de competencia. parcelamento (CFONPN) e informativo e NAO entra na margem: e repasse do acrescimo pago pelo comprador, que tambem nao esta na receita.';
+
+
+--
+-- Name: anuncios_preco_alvo(uuid[], date, date, numeric); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.anuncios_preco_alvo(_account_ids uuid[], _from date, _to date, _margem_alvo numeric DEFAULT 8) RETURNS TABLE(account_id uuid, item_id text, titulo text, seller_sku text, unidades bigint, receita numeric, valor_produto numeric, margem numeric, margem_pct numeric, custo_faltando boolean, preco_medio numeric, frete_comprador_un numeric, pct_variavel numeric, custo_un numeric, margem_alvo numeric, preco_alvo numeric, motivo_sem_alvo text, cheio_base numeric, data_base date, cheio_lido numeric, cheio_alterado_em timestamp with time zone, promocao_preco numeric, promocao_fim timestamp with time zone, promocao_tipo text, promocao_campanha text, lido_em timestamp with time zone, desconto_pct numeric, cheio_alvo numeric)
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  WITH a AS (
+    SELECT * FROM public.anuncios_margem(public.contas_permitidas(_account_ids), _from, _to)
+  ),
+  c AS (
+    SELECT a.*,
+      (1 - _margem_alvo / 100.0) AS q,
+      a.valor_produto / NULLIF(a.unidades, 0) AS pm,
+      (a.receita - a.valor_produto) / NULLIF(a.unidades, 0) AS e,
+      (a.comissao + a.imposto + a.ads) / NULLIF(a.valor_produto, 0) AS k,
+      (a.cmv + a.frete + a.frete_rateado) / NULLIF(a.unidades, 0) AS f
+    FROM a
+  ),
+  p AS (
+    SELECT c.*,
+      CASE WHEN _margem_alvo IS NULL OR _margem_alvo <= 0 OR _margem_alvo >= 50 THEN 'margem-alvo fora de 0 a 50%'
+           WHEN COALESCE(c.unidades, 0) = 0 OR COALESCE(c.valor_produto, 0) <= 0 THEN 'sem venda no período'
+           WHEN c.custo_faltando THEN 'venda sem custo cadastrado: a margem não é confiável'
+           WHEN c.q - c.k <= 0 THEN 'comissão, imposto e Ads levam ' || round(100 * c.k, 1) || '% do preço: nenhum preço chega à margem-alvo'
+           WHEN (c.f - c.q * c.e) / (c.q - c.k) <= 0 THEN 'o frete pago pelo comprador cobre os custos: a estimativa não se aplica'
+      END AS motivo
+    FROM c
+  ),
+  alvo AS (
+    SELECT p.*,
+      CASE WHEN p.motivo IS NULL THEN (ceil(100 * (p.f - p.q * p.e) / (p.q - p.k)) / 100)::numeric(12,2) END AS preco_alvo,
+      (r.promocao_preco IS NOT NULL AND r.promocao_preco < r.cheio_lido
+        AND (r.promocao_fim IS NULL OR r.promocao_fim > now())) AS promo_ativa,
+      r.cheio_base, r.data_base, r.cheio_lido, r.cheio_alterado_em, r.promocao_preco, r.promocao_fim,
+      r.promocao_tipo, r.promocao_campanha, r.lido_em
+    FROM p
+    LEFT JOIN public.ajuste_preco r ON r.account_id = p.account_id AND r.item_id = p.item_id
+  )
+  SELECT x.account_id, x.item_id, x.titulo, x.seller_sku, x.unidades, x.receita, x.valor_produto, x.margem,
+    round(100 * x.margem / NULLIF(x.receita, 0), 2) AS margem_pct,
+    x.custo_faltando,
+    round(x.pm, 2) AS preco_medio,
+    round(x.e, 2) AS frete_comprador_un,
+    round(100 * x.k, 2) AS pct_variavel,
+    round(x.f, 2) AS custo_un,
+    _margem_alvo AS margem_alvo,
+    x.preco_alvo,
+    x.motivo AS motivo_sem_alvo,
+    x.cheio_base, x.data_base, x.cheio_lido, x.cheio_alterado_em,
+    CASE WHEN x.promo_ativa THEN x.promocao_preco END,
+    CASE WHEN x.promo_ativa THEN x.promocao_fim END,
+    CASE WHEN x.promo_ativa THEN x.promocao_tipo END,
+    CASE WHEN x.promo_ativa THEN x.promocao_campanha END,
+    x.lido_em,
+    CASE WHEN x.lido_em IS NULL THEN NULL
+         WHEN x.promo_ativa THEN round(100 * (1 - x.promocao_preco / x.cheio_lido), 2)
+         ELSE 0 END AS desconto_pct,
+    CASE WHEN x.lido_em IS NULL OR x.preco_alvo IS NULL THEN NULL
+         WHEN x.promo_ativa THEN (ceil(100 * x.preco_alvo * x.cheio_lido / x.promocao_preco) / 100)::numeric(12,2)
+         ELSE x.preco_alvo END AS cheio_alvo
+  FROM alvo x
+  ORDER BY x.receita DESC, x.item_id;
+$$;
+
+
+--
+-- Name: FUNCTION anuncios_preco_alvo(_account_ids uuid[], _from date, _to date, _margem_alvo numeric); Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON FUNCTION public.anuncios_preco_alvo(_account_ids uuid[], _from date, _to date, _margem_alvo numeric) IS 'Preço-alvo por anúncio: o preço praticado em que a margem da anuncios_margem chega a _margem_alvo (%), e o cheio equivalente com o desconto da promoção ativa lida do ML (ajuste_preco). Estimativa linear: comissão, imposto e Ads em % do preço; CMV, frete e rateio por unidade; frete pago pelo comprador fixo por unidade. Nulo com motivo_sem_alvo quando não dá para estimar.';
 
 
 --
@@ -5150,6 +5267,37 @@ CREATE TABLE public.account_tax_rates (
 
 
 --
+-- Name: ajuste_preco; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.ajuste_preco (
+    account_id uuid NOT NULL,
+    item_id text NOT NULL,
+    cheio_base numeric(12,2) NOT NULL,
+    data_base date NOT NULL,
+    cheio_lido numeric(12,2),
+    cheio_alterado_em timestamp with time zone,
+    promocao_preco numeric(12,2),
+    promocao_fim timestamp with time zone,
+    promocao_tipo text,
+    promocao_campanha text,
+    lido_em timestamp with time zone,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ajuste_preco_check CHECK (((promocao_preco IS NULL) OR (cheio_lido IS NOT NULL))),
+    CONSTRAINT ajuste_preco_cheio_base_check CHECK ((cheio_base > (0)::numeric)),
+    CONSTRAINT ajuste_preco_cheio_lido_check CHECK ((cheio_lido > (0)::numeric)),
+    CONSTRAINT ajuste_preco_promocao_preco_check CHECK ((promocao_preco > (0)::numeric))
+);
+
+
+--
+-- Name: TABLE ajuste_preco; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.ajuste_preco IS 'Ajuste de preço por anúncio: o cheio-base da progressão (cheio_base, data_base) e a última leitura de preço do ML (cheio, promoção ativa). Escrita só pelo servidor; o app lê pelo RLS da conta.';
+
+
+--
 -- Name: app_settings; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -6208,6 +6356,14 @@ ALTER TABLE ONLY public.account_members
 
 ALTER TABLE ONLY public.account_tax_rates
     ADD CONSTRAINT account_tax_rates_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ajuste_preco ajuste_preco_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ajuste_preco
+    ADD CONSTRAINT ajuste_preco_pkey PRIMARY KEY (account_id, item_id);
 
 
 --
@@ -7666,6 +7822,14 @@ ALTER TABLE ONLY public.account_tax_rates
 
 
 --
+-- Name: ajuste_preco ajuste_preco_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ajuste_preco
+    ADD CONSTRAINT ajuste_preco_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.marketplace_accounts(id) ON DELETE CASCADE;
+
+
+--
 -- Name: app_settings app_settings_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -8081,6 +8245,12 @@ CREATE POLICY "admin exclui conta" ON public.marketplace_accounts FOR DELETE TO 
 
 
 --
+-- Name: ajuste_preco; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.ajuste_preco ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: app_settings; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
@@ -8323,6 +8493,13 @@ ALTER TABLE public.operating_cost_items ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE public.operating_costs ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: ajuste_preco own ajuste_preco; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "own ajuste_preco" ON public.ajuste_preco FOR SELECT USING (public.owns_account(account_id));
+
 
 --
 -- Name: card_invoice_items own card_invoice_items; Type: POLICY; Schema: public; Owner: -
@@ -8650,12 +8827,29 @@ GRANT ALL ON FUNCTION public.ajustar_mes_recorrencia(_owner uuid, _recorrencia_i
 
 
 --
+-- Name: FUNCTION ajuste_preco_gravar_leitura(_account_id uuid, _leituras jsonb); Type: ACL; Schema: public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION public.ajuste_preco_gravar_leitura(_account_id uuid, _leituras jsonb) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.ajuste_preco_gravar_leitura(_account_id uuid, _leituras jsonb) TO service_role;
+
+
+--
 -- Name: FUNCTION anuncios_margem(_account_ids uuid[], _from date, _to date); Type: ACL; Schema: public; Owner: -
 --
 
 REVOKE ALL ON FUNCTION public.anuncios_margem(_account_ids uuid[], _from date, _to date) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.anuncios_margem(_account_ids uuid[], _from date, _to date) TO authenticated;
 GRANT ALL ON FUNCTION public.anuncios_margem(_account_ids uuid[], _from date, _to date) TO service_role;
+
+
+--
+-- Name: FUNCTION anuncios_preco_alvo(_account_ids uuid[], _from date, _to date, _margem_alvo numeric); Type: ACL; Schema: public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION public.anuncios_preco_alvo(_account_ids uuid[], _from date, _to date, _margem_alvo numeric) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.anuncios_preco_alvo(_account_ids uuid[], _from date, _to date, _margem_alvo numeric) TO authenticated;
+GRANT ALL ON FUNCTION public.anuncios_preco_alvo(_account_ids uuid[], _from date, _to date, _margem_alvo numeric) TO service_role;
 
 
 --
@@ -9796,6 +9990,14 @@ GRANT UPDATE(display_name) ON TABLE public.account_members TO authenticated;
 
 GRANT ALL ON TABLE public.account_tax_rates TO authenticated;
 GRANT ALL ON TABLE public.account_tax_rates TO service_role;
+
+
+--
+-- Name: TABLE ajuste_preco; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT ALL ON TABLE public.ajuste_preco TO service_role;
+GRANT SELECT ON TABLE public.ajuste_preco TO authenticated;
 
 
 --

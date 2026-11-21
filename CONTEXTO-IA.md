@@ -31,6 +31,7 @@ Público: donos de operação de e-commerce, sem conhecimento técnico.
 | `product_skus` | Os produtos e seus custos, incluindo kits (compostos por outros produtos). |
 | `account_tax_rates` | A alíquota de imposto da empresa, com data de início e fim de vigência. |
 | `marketplace_accounts` | As contas de marketplace conectadas, com o estado da integração. |
+| `ajuste_preco` | Por anúncio: o preço cheio de partida do aumento gradual (`cheio_base`, `data_base`) e a última leitura de preço do ML (cheio, promoção ativa, fim). Só o servidor grava, por `ajuste_preco_gravar_leitura`. |
 
 ## Principais funções do banco
 
@@ -42,6 +43,7 @@ Público: donos de operação de e-commerce, sem conhecimento técnico.
 | `dashboard_kpis` | Os números principais do Dashboard. |
 | `dashboard_dre_tree` | A estrutura de receitas e despesas em formato de DRE para o Dashboard. |
 | `anuncios_margem` | Margem por anúncio, usada na tela de Anúncios. |
+| `anuncios_preco_alvo` | Preço-alvo por anúncio (tela Ajuste de preço e MCP): o preço praticado em que a margem da `anuncios_margem` chega à mínima e o cheio equivalente com o desconto da promoção ativa. Estimativa linear; não muda a margem. |
 | `conc_recebimentos` | O que já foi liberado, o que ainda vai cair e o que foi estornado. |
 | `conc_divergencias` | Casos que não fecham: tarifa de pedido cancelado, tarifa sem venda, venda com faturamento pendente, venda sem custo. |
 
@@ -66,5 +68,7 @@ Público: donos de operação de e-commerce, sem conhecimento técnico.
 - **Data de liberação do dinheiro:** vem do campo de *release* do pagamento (`money_release_date`). O campo `released` não é confiável e não deve ser usado como critério.
 - **Pedidos cancelados** ficam fora de todos os cálculos; `partially_refunded` entra abatendo o valor reembolsado. O cancelamento de pedido de outro dia chega pela reconsulta de 7 dias a cada 3 horas (`ml-recheck-7d-3h`, desde 17/11/2026) e pela de 30 dias da madrugada: o `/orders/search` não filtra por data de atualização.
 - **Preço médio (tela Anúncios)** = `valor_produto` ÷ unidades (Σ preço unitário × quantidade, sem frete). Não use receita ÷ unidades: a receita traz o frete pago pelo comprador. No pedido em carrinho, o Mercado Pago desconta do vendedor também o frete do comprador, que paga fora do pedido: é custo real, não erro.
+- **Preço cheio do anúncio:** o `price` do `/items` é o preço cheio (standard), não o da promoção, mas `ml_items` só muda quando o catálogo é sincronizado à mão. O cheio e a promoção de agora vêm do `/items/{id}/prices` (e do `/sale_price`, que diz a campanha) e ficam em `ajuste_preco`: a tela Ajuste de preço relê ao abrir (se passou de 1 hora) e a auditoria diária relê todo dia.
+- **Preço-alvo (Ajuste de preço):** `p = (f − (1 − m)·e) ÷ ((1 − m) − k)`, com `k` = (comissão + imposto + Ads) ÷ valor do produto, `f` = (CMV + frete + rateio) por unidade e `e` = frete pago pelo comprador por unidade (receita − valor do produto). No preço médio de hoje devolve exatamente a margem da `anuncios_margem`. Acima ou abaixo de R$ 79 o frete e a tarifa fixa mudam, e a tela avisa quando o caminho cruza essa faixa.
 - **Publicidade (ADS):** a fonte única é `ml_ads_daily`, rateada por unidade vendida do anúncio no dia. O `MCLICS` do faturamento é excluído para não duplicar.
 - **Alertas do Telegram** não consideram ADS de propósito, para evitar falso positivo, e nunca disparam para vendas anteriores à ativação dos alertas.

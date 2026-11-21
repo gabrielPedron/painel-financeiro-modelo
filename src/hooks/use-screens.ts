@@ -7,6 +7,7 @@ export const SCREENS: { key: string; label: string; url: string }[] = [
   { key: "conciliacao", label: "Conciliação", url: "/conciliacao" },
   { key: "shopee", label: "Shopee", url: "/shopee" },
   { key: "anuncios", label: "Anúncios", url: "/anuncios" },
+  { key: "ajuste-preco", label: "Ajuste de preço", url: "/ajuste-preco" },
   { key: "outras-receitas", label: "Outras receitas", url: "/outras-receitas" },
   { key: "faturamento-locacao", label: "Faturamento locação", url: "/faturamento-locacao" },
   { key: "custos-fixos", label: "Custos Empresa", url: "/custos-fixos" },

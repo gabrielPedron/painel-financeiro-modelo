@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedAjustePrecoRouteImport } from './routes/_authenticated/ajuste-preco'
 import { Route as AuthenticatedAnunciosRouteImport } from './routes/_authenticated/anuncios'
 import { Route as AuthenticatedConciliacaoRouteImport } from './routes/_authenticated/conciliacao'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
@@ -68,6 +69,12 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAjustePrecoRoute =
+  AuthenticatedAjustePrecoRouteImport.update({
+    id: '/ajuste-preco',
+    path: '/ajuste-preco',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAnunciosRoute = AuthenticatedAnunciosRouteImport.update({
   id: '/anuncios',
   path: '/anuncios',
@@ -232,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/ajuste-preco': typeof AuthenticatedAjustePrecoRoute
   '/anuncios': typeof AuthenticatedAnunciosRoute
   '/conciliacao': typeof AuthenticatedConciliacaoRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -266,6 +274,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/ajuste-preco': typeof AuthenticatedAjustePrecoRoute
   '/anuncios': typeof AuthenticatedAnunciosRoute
   '/conciliacao': typeof AuthenticatedConciliacaoRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -303,6 +312,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/_authenticated/ajuste-preco': typeof AuthenticatedAjustePrecoRoute
   '/_authenticated/anuncios': typeof AuthenticatedAnunciosRoute
   '/_authenticated/conciliacao': typeof AuthenticatedConciliacaoRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -341,6 +351,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/recuperar-senha'
     | '/redefinir-senha'
+    | '/ajuste-preco'
     | '/anuncios'
     | '/conciliacao'
     | '/configuracoes'
@@ -375,6 +386,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/recuperar-senha'
     | '/redefinir-senha'
+    | '/ajuste-preco'
     | '/anuncios'
     | '/conciliacao'
     | '/configuracoes'
@@ -411,6 +423,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/recuperar-senha'
     | '/redefinir-senha'
+    | '/_authenticated/ajuste-preco'
     | '/_authenticated/anuncios'
     | '/_authenticated/conciliacao'
     | '/_authenticated/configuracoes'
@@ -498,6 +511,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ajuste-preco': {
+      id: '/_authenticated/ajuste-preco'
+      path: '/ajuste-preco'
+      fullPath: '/ajuste-preco'
+      preLoaderRoute: typeof AuthenticatedAjustePrecoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/anuncios': {
@@ -707,6 +727,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAjustePrecoRoute: typeof AuthenticatedAjustePrecoRoute
   AuthenticatedAnunciosRoute: typeof AuthenticatedAnunciosRoute
   AuthenticatedConciliacaoRoute: typeof AuthenticatedConciliacaoRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
@@ -727,6 +748,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAjustePrecoRoute: AuthenticatedAjustePrecoRoute,
   AuthenticatedAnunciosRoute: AuthenticatedAnunciosRoute,
   AuthenticatedConciliacaoRoute: AuthenticatedConciliacaoRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,

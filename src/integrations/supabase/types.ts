@@ -79,6 +79,59 @@ export type Database = {
           },
         ]
       }
+      ajuste_preco: {
+        Row: {
+          account_id: string
+          cheio_alterado_em: string | null
+          cheio_base: number
+          cheio_lido: number | null
+          criado_em: string
+          data_base: string
+          item_id: string
+          lido_em: string | null
+          promocao_campanha: string | null
+          promocao_fim: string | null
+          promocao_preco: number | null
+          promocao_tipo: string | null
+        }
+        Insert: {
+          account_id: string
+          cheio_alterado_em?: string | null
+          cheio_base: number
+          cheio_lido?: number | null
+          criado_em?: string
+          data_base: string
+          item_id: string
+          lido_em?: string | null
+          promocao_campanha?: string | null
+          promocao_fim?: string | null
+          promocao_preco?: number | null
+          promocao_tipo?: string | null
+        }
+        Update: {
+          account_id?: string
+          cheio_alterado_em?: string | null
+          cheio_base?: number
+          cheio_lido?: number | null
+          criado_em?: string
+          data_base?: string
+          item_id?: string
+          lido_em?: string | null
+          promocao_campanha?: string | null
+          promocao_fim?: string | null
+          promocao_preco?: number | null
+          promocao_tipo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ajuste_preco_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_settings: {
         Row: {
           created_at: string
@@ -2290,6 +2343,10 @@ export type Database = {
         }
         Returns: number
       }
+      ajuste_preco_gravar_leitura: {
+        Args: { _account_id: string; _leituras: Json }
+        Returns: number
+      }
       anuncios_margem: {
         Args: { _account_ids: string[]; _from: string; _to: string }
         Returns: {
@@ -2320,6 +2377,44 @@ export type Database = {
           unidades: number
           unidades_canceladas: number
           valor_perdido: number
+          valor_produto: number
+        }[]
+      }
+      anuncios_preco_alvo: {
+        Args: {
+          _account_ids: string[]
+          _from: string
+          _margem_alvo?: number
+          _to: string
+        }
+        Returns: {
+          account_id: string
+          cheio_alterado_em: string | null
+          cheio_alvo: number | null
+          cheio_base: number | null
+          cheio_lido: number | null
+          custo_faltando: boolean
+          custo_un: number | null
+          data_base: string | null
+          desconto_pct: number | null
+          frete_comprador_un: number | null
+          item_id: string
+          lido_em: string | null
+          margem: number
+          margem_alvo: number
+          margem_pct: number | null
+          motivo_sem_alvo: string | null
+          pct_variavel: number | null
+          preco_alvo: number | null
+          preco_medio: number | null
+          promocao_campanha: string | null
+          promocao_fim: string | null
+          promocao_preco: number | null
+          promocao_tipo: string | null
+          receita: number
+          seller_sku: string | null
+          titulo: string
+          unidades: number
           valor_produto: number
         }[]
       }

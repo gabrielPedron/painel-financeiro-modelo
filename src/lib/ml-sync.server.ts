@@ -121,7 +121,7 @@ async function loadAccountForSync(
   };
 }
 
-async function mlGet(
+export async function mlGet(
   path: string,
   token: string,
   extraHeaders?: Record<string, string>,
