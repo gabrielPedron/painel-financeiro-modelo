@@ -1,6 +1,6 @@
 // Ajuste de preço: a progressão gradual do preço cheio até o cheio equivalente ao preço-alvo.
 // O preço-alvo nasce no banco (anuncios_preco_alvo); aqui só a aritmética dos passos e das datas,
-// usada pela tela e pelo MCP, para os dois contarem igual.
+// usada pela tela.
 
 /** Margem mínima padrão, em % da receita. A tela deixa trocar. */
 export const MARGEM_ALVO_PCT = 8;

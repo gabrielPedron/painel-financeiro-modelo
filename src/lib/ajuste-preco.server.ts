@@ -1,6 +1,6 @@
 // Leitura de preço do Mercado Livre para a aba Ajuste de preço (somente servidor: usa o token da conta).
 // O ml_items.price é o cheio, mas só muda quando o catálogo é sincronizado à mão; aqui o preço cheio e a
-// promoção ativa vêm do /items/{id}/prices na hora e ficam em ajuste_preco, de onde a tela e o MCP leem.
+// promoção ativa vêm do /items/{id}/prices na hora e ficam em ajuste_preco, de onde a tela lê.
 // Só lê o ML; grava apenas a leitura (e a base do anúncio novo), pela função do banco.
 import { supabaseAdmin } from "./ml-oauth.server";
 import { getAccountToken, mlGet } from "./ml-sync.server";

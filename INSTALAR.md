@@ -28,29 +28,43 @@ erro exato (sem segredo) e pergunte. Seguir adiante com um passo quebrado custa 
 1. Conta no **GitHub**.
 2. Conta na **Cloudflare** com o plano pago do Workers ativo (cerca de US$ 5 por mês). O
    plano gratuito corta a sincronização no meio: ela passa do limite de processamento.
-3. Conta no **Supabase** (o plano gratuito serve para começar).
+3. Conta no **Supabase** (o plano gratuito serve para começar), com **vaga para um projeto
+   novo**. Cada pessoa tem no máximo 2 projetos gratuitos ativos, somando todas as
+   organizações dela. Se as duas vagas já estiverem ocupadas, o caminho sem custo é criar a
+   conta do Supabase com outro e-mail.
+   - Para conferir: em `https://supabase.com/dashboard`, clicar em **New project**. Se aparecer
+     "Unable to create project under Free Plan organization", não há vaga.
 4. **Aplicação no Mercado Livre**: entrar em `https://developers.mercadolivre.com.br` com a
    conta titular da loja e pedir a criação da aplicação. O Mercado Livre analisa o pedido, e
    isso pode levar dias: é o passo que mais atrasa. A aplicação fica presa a essa conta para
    sempre, então tem que ser a da loja, e não a de um funcionário ou do mentor.
 5. No computador: Git, [Bun](https://bun.sh) e Node 24 ou mais novo.
+6. **Convite do mentor aceito.** O repositório-modelo é privado: o mentor convida o usuário do
+   GitHub do dono, o convite chega por e-mail, e só depois de aceitar aparece o botão
+   **Use this template**. Sem o convite, o link do modelo dá "404".
 
-**Pronto quando:** `git --version`, `bun --version` e `node --version` respondem (Node 24+), e
-o dono confirma as três contas. A aplicação do Mercado Livre pode ainda estar em análise: ela
+**Pronto quando:** `git --version`, `bun --version` e `node --version` respondem (Node 24+), o
+dono confirma as três contas e consegue abrir o repositório-modelo no GitHub. A aplicação do Mercado Livre pode ainda estar em análise: ela
 só entra no passo 8.
 
 ## 1. Copiar o modelo
 
-O dono abre o repositório-modelo no GitHub, clica em **Use this template**, cria um repositório
-**privado** na conta dele e te passa o endereço.
+O dono já criou a cópia dele com **Use this template** e te mandou clonar (seção "Como
+instalar" do `README.md`). Se o clone ainda não foi feito, peça o endereço do repositório **dele**
+(não o do modelo) e clone:
 
 ```bash
 git clone <endereço do repositório dele> sistema-financeiro
 ```
 
+Depois, dentro da pasta clonada:
+
 ```bash
-cd sistema-financeiro && bun install
+bun install
 ```
+
+Confira com `git remote -v` que o endereço é o repositório do dono. Se for o do modelo, pare:
+as mudanças dele iriam para o lugar errado.
 
 **Pronto quando:** `bun run test` termina com `fail 0`.
 
@@ -71,22 +85,23 @@ em `.env` e `wrangler.jsonc` não acha nada.
 
 ## 3. Subir o banco
 
-Estes comandos pedem login e senha: o dono roda no terminal dele, um por vez.
+Estes comandos pedem login e senha: o dono roda no terminal dele, um por vez. Eles levam a
+versão testada da ferramenta (`@3.2.0`): mantenha como está, mesmo que ela avise de versão nova.
 
 ```bash
-npx supabase login
+npx supabase@3.2.0 login
 ```
 
 ```bash
-npx supabase init
+npx supabase@3.2.0 init
 ```
 
 ```bash
-npx supabase link --project-ref <project ref>
+npx supabase@3.2.0 link --project-ref <project ref>
 ```
 
 ```bash
-npx supabase db push --remote
+npx supabase@3.2.0 db push --remote
 ```
 
 O `link` e o `db push` pedem a senha do banco do passo 2. O `db push` aplica uma migração
@@ -94,11 +109,11 @@ O `link` e o `db push` pedem a senha do banco do passo 2. O `db push` aplica uma
 classificação das cobranças do Mercado Livre e agendamentos. Leva poucos segundos.
 
 Se quem roda o `db push` é você (IA), a ferramenta percebe e recusa gravar sem confirmação
-(`Confirmation required ... running in agent mode`). Rode antes `npx supabase db push --remote --dry-run`,
+(`Confirmation required ... running in agent mode`). Rode antes `npx supabase@3.2.0 db push --remote --dry-run`,
 mostre ao dono que ele aplica só `20260101000000_base.sql` num projeto vazio, e com o sim dele
-rode `npx supabase db push --remote --yes`.
+rode `npx supabase@3.2.0 db push --remote --yes`.
 
-**Pronto quando:** `npx supabase migration list --remote` mostra `20260101000000` nas duas
+**Pronto quando:** `npx supabase@3.2.0 migration list --remote` mostra `20260101000000` nas duas
 colunas (local e remoto).
 
 ## 4. Fechar o cadastro e criar o usuário do dono
@@ -111,6 +126,8 @@ No painel do Supabase, o dono:
    marcando **Auto Confirm User**.
 
 **Pronto quando:** o usuário aparece na lista de Users e o cadastro público está desligado.
+Projeto novo nasce com o cadastro **ligado**; se o dono esquecer, o `configurar.mjs` do passo 7
+para e mostra onde desligar.
 
 ## 5. Publicar o app
 
@@ -135,7 +152,10 @@ No painel, em **Authentication > URL Configuration**, o dono põe:
 - **Site URL**: o endereço do app.
 - **Redirect URLs**: `<endereço>/redefinir-senha`.
 
-**Pronto quando:** os dois campos estão salvos. Sem isso o "Esqueci minha senha" manda para o lugar errado.
+**Pronto quando:** o dono abre `<endereço>/recuperar-senha`, pede o link com o e-mail dele, e o
+link que chega por e-mail abre a tela "Definir nova senha" no endereço do app. Se o link
+apontar para `localhost`, o Site URL ou a Redirect URL não foi salva. O dono não precisa trocar a
+senha: basta conferir para onde o link leva.
 
 ## 7. Ligar o banco ao app
 
@@ -175,6 +195,10 @@ O `401` prova que os ganchos do agendador recusam quem chega sem o segredo.
 **Pronto quando:** a integração aparece como **conectada** e a fila em Configurações >
 Integrações mostra itens sendo processados. O histórico completo leva de minutos a horas.
 
+Quando a fila esvaziar, confira os **pagamentos**: na Conciliação, aba de recebimentos, devem
+aparecer valores para as vendas do período. Pedidos chegando com recebimentos vazios é o caso da
+última linha de [Se travar](#se-travar): pare e avise o mentor.
+
 ## 9. Guardar a configuração
 
 ```bash
@@ -194,9 +218,11 @@ Depois disso, siga a seção "Primeiros dias" do `README.md`: custo dos produtos
 | `npx.ps1 não pode ser carregado` ou `a execução de scripts foi desabilitada` | PowerShell do Windows com scripts bloqueados | Repetir o comando com `npx.cmd` no lugar de `npx` |
 | `Confirmation required ... agent mode` no `db push` | A IA rodou o comando e a ferramenta pede confirmação | `--dry-run` primeiro, mostrar ao dono, depois `--yes` |
 | `could not translate host name` ou `Network is unreachable` ao falar com o banco | A conexão direta do Supabase gratuito é só IPv6, e a rede do computador está sem IPv6 | Usar o pooler, como mostra **Connect** no painel do projeto (endereço `aws-...pooler.supabase.com`, usuário `postgres.<project ref>`) |
-| `Cannot find project ref` | O `link` do passo 3 não rodou nesta pasta | Rodar `npx supabase link --project-ref <ref>` |
+| `Cannot find project ref` | O `link` do passo 3 não rodou nesta pasta | Rodar `npx supabase@3.2.0 link --project-ref <ref>` |
 | Erro de limite de CPU no `wrangler deploy` | Plano gratuito do Workers | Ativar o plano pago na Cloudflare e publicar de novo |
 | `APP_BASE_URL não configurada` ao conectar o Mercado Livre | Faltou a segunda publicação do passo 5 | Preencher `APP_BASE_URL` e publicar de novo |
+| `o cadastro público do Supabase está LIGADO` no `configurar.mjs` | O passo 4 ficou pela metade | Desligar **Allow new users to sign up** em Authentication > Sign In / Providers e rodar o `configurar.mjs` de novo |
+| `Unable to create project under Free Plan organization` | A conta do Supabase já tem 2 projetos gratuitos ativos | Criar a conta do Supabase com outro e-mail, ou liberar uma vaga |
 | `Usuário ... não existe` no `configurar.mjs` | O usuário do passo 4 não foi criado, ou o e-mail está diferente | Conferir em Authentication > Users |
 | `Já existe um dono da equipe` | A instalação já tem dono | Novos usuários: Configurações > Usuários |
 | `o banco não respondeu` no `configurar.mjs` | Chave errada no `.env.local` ou passo 3 incompleto | Conferir os dois |

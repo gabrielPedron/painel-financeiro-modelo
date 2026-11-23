@@ -6,8 +6,10 @@
 //   1. grava a chave secreta do Supabase no Worker        (wrangler secret put SUPABASE_SERVICE_ROLE_KEY)
 //   2. sorteia o segredo do agendador e grava nos dois lados (cofre do Supabase + Worker)
 //   3. transforma o usuário --dono em dono da equipe       (só enquanto não existe dono)
+// Antes de gravar qualquer coisa, confere se o cadastro público do Supabase está desligado.
 //
-// Lê SUPABASE_URL do .env e SUPABASE_SERVICE_ROLE_KEY do .env.local (arquivo que só você preenche).
+// Lê SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY do .env e SUPABASE_SERVICE_ROLE_KEY do .env.local
+// (arquivo que só você preenche).
 import { createClient } from "@supabase/supabase-js";
 import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
@@ -47,12 +49,14 @@ function gravarSegredoNoWorker(nome, valor) {
 const publico = lerEnv(".env");
 const privado = lerEnv(".env.local");
 const url = publico.SUPABASE_URL;
+const publicavel = publico.SUPABASE_PUBLISHABLE_KEY;
 const chave = privado.SUPABASE_SERVICE_ROLE_KEY;
 const endereco = (argumento("endereco") ?? "").replace(/\/+$/, "");
 const dono = argumento("dono");
 const nome = argumento("nome");
 
 if (!url || /SEU_PROJECT_REF/.test(url)) parar("preencha SUPABASE_URL no .env (copie de .env.example).");
+if (!publicavel || publicavel.endsWith("...")) parar("preencha SUPABASE_PUBLISHABLE_KEY no .env (copie de .env.example).");
 if (!chave) parar("preencha SUPABASE_SERVICE_ROLE_KEY no .env.local (copie de .env.local.example). Só você vê esse arquivo.");
 if (!/^https:\/\/[^/]+$/.test(endereco)) parar("informe --endereco https://... (o endereço que a publicação mostrou, sem barra no final).");
 if (!dono) parar("informe --dono com o e-mail do usuário criado em Authentication > Add user.");
@@ -61,7 +65,19 @@ const supabase = createClient(url, chave, { auth: { persistSession: false, autoR
 
 // Prova que a chave e o banco respondem antes de mexer em qualquer coisa.
 const { error: erroBanco } = await supabase.from("billing_subtype_map").select("sub_type", { count: "exact", head: true });
-if (erroBanco) parar(`o banco não respondeu (${erroBanco.message}). Confira a chave e se "npx supabase db push --remote" já rodou.`);
+if (erroBanco) parar(`o banco não respondeu (${erroBanco.message}). Confira a chave e se "npx supabase@3.2.0 db push --remote" já rodou.`);
+
+// Projeto novo do Supabase nasce com o cadastro aberto: qualquer pessoa com a chave pública (que está
+// no navegador) criaria conta e gravaria dados e arquivos. O sistema é fechado; o dono cria usuários
+// em Configurações > Usuários.
+const respostaAuth = await fetch(`${url}/auth/v1/settings`, { headers: { apikey: publicavel } }).catch(() => null);
+const ajustesAuth = respostaAuth?.ok ? await respostaAuth.json().catch(() => null) : null;
+if (!ajustesAuth) parar(`não consegui ler os ajustes de login do Supabase (HTTP ${respostaAuth?.status ?? "sem resposta"}). Confira SUPABASE_PUBLISHABLE_KEY no .env.`);
+if (ajustesAuth.disable_signup !== true) {
+  parar("o cadastro público do Supabase está LIGADO: qualquer pessoa poderia criar conta no seu sistema.\n" +
+    "No painel do Supabase, em Authentication > Sign In / Providers, desligue 'Allow new users to sign up', salve e rode este comando de novo.");
+}
+console.log("ok  cadastro público desligado no Supabase");
 
 gravarSegredoNoWorker("SUPABASE_SERVICE_ROLE_KEY", chave);
 

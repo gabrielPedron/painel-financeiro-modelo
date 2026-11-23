@@ -12,13 +12,13 @@ test("troca de identidade limpa consultas guardadas e liberação remove o obser
     return { unsubscribe: () => { cancelou = true; } };
   });
   cliente.setQueryData(["my-screens"], { keys: ["*"], isAdmin: true });
-  cliente.setQueryData(["mcp", "chamadas"], [{ ferramenta: "gerente_v1_estado" }]);
+  cliente.setQueryData(["exemplo", "chamadas"], [{ item: "primeiro" }]);
   notificar("SIGNED_IN", "usuario-a");
   assert.equal(cliente.getQueryData(["my-screens"]), undefined);
-  assert.equal(cliente.getQueryData(["mcp", "chamadas"]), undefined);
-  cliente.setQueryData(["mcp", "credenciais"], [{ nome: "antiga" }]);
+  assert.equal(cliente.getQueryData(["exemplo", "chamadas"]), undefined);
+  cliente.setQueryData(["exemplo", "credenciais"], [{ nome: "antiga" }]);
   notificar("SIGNED_OUT", null);
-  assert.equal(cliente.getQueryData(["mcp", "credenciais"]), undefined);
+  assert.equal(cliente.getQueryData(["exemplo", "credenciais"]), undefined);
   notificar("SIGNED_IN", "usuario-b");
   cliente.setQueryData(["my-screens"], { keys: ["dashboard"] });
   notificar("TOKEN_REFRESHED", "usuario-b");
@@ -55,7 +55,7 @@ test("evento de MFA para a mesma identidade não desmonta o formulário", () => 
 
 test("troca de usuário pede remontagem dos observadores ativos", () => {
   const cliente = new QueryClient();
-  const chave = ["mcp", "credenciais"];
+  const chave = ["exemplo", "credenciais"];
   cliente.setQueryData(chave, [{ nome: "antiga" }]);
   const observadorAntigo = new QueryObserver(cliente, { queryKey: chave, queryFn: async () => [] });
   const desassinar = observadorAntigo.subscribe(() => {});
@@ -83,11 +83,11 @@ test("recuperação de senha e renovação que mudam o usuário eliminam cache e
     return { unsubscribe: () => {} };
   }, (id) => mudancas.push(id));
   notificar("INITIAL_SESSION", "usuario-a");
-  cliente.setQueryData(["mcp", "credenciais"], [{ nome: "do usuario a" }]);
+  cliente.setQueryData(["exemplo", "credenciais"], [{ nome: "do usuario a" }]);
   notificar("PASSWORD_RECOVERY", "usuario-b");
-  assert.equal(cliente.getQueryData(["mcp", "credenciais"]), undefined);
-  cliente.setQueryData(["mcp", "chamadas"], [{ conta: "do usuario b" }]);
+  assert.equal(cliente.getQueryData(["exemplo", "credenciais"]), undefined);
+  cliente.setQueryData(["exemplo", "chamadas"], [{ conta: "do usuario b" }]);
   notificar("TOKEN_REFRESHED", "usuario-c");
-  assert.equal(cliente.getQueryData(["mcp", "chamadas"]), undefined);
+  assert.equal(cliente.getQueryData(["exemplo", "chamadas"]), undefined);
   assert.deepEqual(mudancas, ["usuario-a", "usuario-b", "usuario-c"]);
 });

@@ -17,10 +17,12 @@
 # Banco
 
 - O banco nasce de `supabase/migrations/20260101000000_base.sql`. Deixe esse arquivo como está.
-- Toda mudança no banco é uma migração nova: `npx supabase migration new <nome>`, depois `npx supabase db push --remote`.
+- Toda mudança no banco é uma migração nova: `npx supabase@3.2.0 migration new <nome>`, depois `npx supabase@3.2.0 db push --remote`.
 - Mudança que apaga coluna, tabela ou dado: mostre ao dono o que será perdido e espere o sim dele.
-- O plano gratuito do Supabase não guarda cópia do banco. Antes de uma migração que altera dados, peça ao dono
-  uma cópia pelo painel (Database > Backups, no plano pago) ou avise que não há como voltar.
+- O plano gratuito do Supabase não guarda cópia do banco. Antes de qualquer migração, rode
+  `node scripts/copia-banco.mjs`: ele salva os dados de cada tabela em Documentos/Backups/painel-financeiro e
+  diz quantas linhas copiou. Confira que terminou sem erro antes de seguir. A estrutura do banco já está nas
+  migrações; usuários do login e tokens do Mercado Livre não entram na cópia.
 
 # Mercado Livre
 

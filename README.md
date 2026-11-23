@@ -43,11 +43,17 @@ está te ajudando a instalar.
 
 ## 4. Como instalar
 
-Abra esta pasta no Claude Code e peça: **"siga o INSTALAR.md"**. A IA executa os passos e para
-sempre que precisar que você crie uma conta, digite uma senha ou cole uma chave.
+1. Faça antes, sozinho, a seção "Antes de começar" do `INSTALAR.md`. O pedido da aplicação no
+   Mercado Livre passa por análise e pode levar dias.
+2. No GitHub, clique em **Use this template** e crie um repositório **privado** na sua conta.
+   Copie o endereço dele (o botão verde **Code** mostra).
+3. Abra o Claude Code numa pasta vazia do seu computador (por exemplo, uma pasta "Sistemas" em
+   Documentos) e cole esta mensagem, trocando o endereço pelo do seu repositório:
 
-Faça antes, sozinho, a seção "Antes de começar" do `INSTALAR.md`. O pedido da aplicação no
-Mercado Livre passa por análise e pode levar dias.
+   > Clone https://github.com/SEU-USUARIO/SEU-REPOSITORIO e siga o INSTALAR.md que está dentro dele.
+
+A IA executa os passos e para sempre que precisar que você crie uma conta, digite uma senha ou
+cole uma chave.
 
 ## 5. Primeiros dias
 

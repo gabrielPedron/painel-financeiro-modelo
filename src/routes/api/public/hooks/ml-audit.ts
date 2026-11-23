@@ -7,7 +7,7 @@ import { cronAutorizado } from "@/lib/segredo";
 // enqueue the corresponding sync jobs. Marks findings that stop reappearing
 // as 'resolvido'. Runs every 6h via pg_cron and can be triggered ad-hoc.
 // Depois da auditoria, relê no ML o preço cheio e a promoção ativa dos anúncios da aba Ajuste de
-// preço (ajuste_preco), para o MCP e a tela partirem da leitura do dia. Uma falha aqui não derruba a auditoria.
+// preço (ajuste_preco), para a tela partir da leitura do dia. Uma falha aqui não derruba a auditoria.
 export const Route = createFileRoute("/api/public/hooks/ml-audit")({
   server: {
     handlers: {

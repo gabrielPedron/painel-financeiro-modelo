@@ -88,7 +88,8 @@
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
-    "vite": "^8.1.6"
+    "vite": "^8.1.6",
+    "wrangler": "4.165.0"
   },
   "overrides": {
     "seroval": "1.6.11",

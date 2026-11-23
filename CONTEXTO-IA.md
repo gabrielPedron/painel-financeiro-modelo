@@ -43,7 +43,7 @@ Público: donos de operação de e-commerce, sem conhecimento técnico.
 | `dashboard_kpis` | Os números principais do Dashboard. |
 | `dashboard_dre_tree` | A estrutura de receitas e despesas em formato de DRE para o Dashboard. |
 | `anuncios_margem` | Margem por anúncio, usada na tela de Anúncios. |
-| `anuncios_preco_alvo` | Preço-alvo por anúncio (tela Ajuste de preço e MCP): o preço praticado em que a margem da `anuncios_margem` chega à mínima e o cheio equivalente com o desconto da promoção ativa. Estimativa linear; não muda a margem. |
+| `anuncios_preco_alvo` | Preço-alvo por anúncio (tela Ajuste de preço): o preço praticado em que a margem da `anuncios_margem` chega à mínima e o cheio equivalente com o desconto da promoção ativa. Estimativa linear; não muda a margem. |
 | `conc_recebimentos` | O que já foi liberado, o que ainda vai cair e o que foi estornado. |
 | `conc_divergencias` | Casos que não fecham: tarifa de pedido cancelado, tarifa sem venda, venda com faturamento pendente, venda sem custo. |
 
