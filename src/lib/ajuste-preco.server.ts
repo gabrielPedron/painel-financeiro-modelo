@@ -79,7 +79,7 @@ export async function atualizarLeiturasDaConta(
   return { lidos: leituras.length, falhas };
 }
 
-/** Releitura diária (auditoria das 6h30): todas as contas do Mercado Livre conectadas. Uma falha não para as outras. */
+/** Releitura diária (auditoria das 06h30 UTC, 03h30 de Brasília): todas as contas do Mercado Livre conectadas. Uma falha não para as outras. */
 export async function atualizarLeiturasDeTodasAsContas(): Promise<{ contas: number; lidos: number; erros: string[] }> {
   const { data: contas, error } = await supabaseAdmin
     .from("marketplace_accounts").select("id, nickname")

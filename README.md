@@ -43,17 +43,16 @@ está te ajudando a instalar.
 
 ## 4. Como instalar
 
-1. Faça antes, sozinho, a seção "Antes de começar" do `INSTALAR.md`. O pedido da aplicação no
-   Mercado Livre passa por análise e pode levar dias.
-2. No GitHub, clique em **Use this template** e crie um repositório **privado** na sua conta.
-   Copie o endereço dele (o botão verde **Code** mostra).
-3. Abra o Claude Code numa pasta vazia do seu computador (por exemplo, uma pasta "Sistemas" em
-   Documentos) e cole esta mensagem, trocando o endereço pelo do seu repositório:
+Siga o **`PASSO-A-PASSO.md`**. Resumo:
 
-   > Clone https://github.com/SEU-USUARIO/SEU-REPOSITORIO e siga o INSTALAR.md que está dentro dele.
+1. **Antes da call**, sozinho: contas no GitHub, na Cloudflare (plano pago do Workers), no
+   Supabase e a aplicação no Mercado Livre, que pode levar dias para ser liberada. No computador,
+   o app do Claude e o Node.js.
+2. **Na call**, uns 35 minutos: você copia este modelo com **Use this template** e manda uma
+   mensagem para o Claude. A IA faz toda a parte técnica e te pede, em três listas curtas, os
+   cliques que só você pode dar.
 
-A IA executa os passos e para sempre que precisar que você crie uma conta, digite uma senha ou
-cole uma chave.
+Senhas e chaves ficam só com você: nem o mentor nem o chat precisam delas.
 
 ## 5. Primeiros dias
 
@@ -70,7 +69,7 @@ quantas vendas estão sem custo, para você não decidir com número inflado.
 
 ## 6. Como mudar o sistema
 
-Peça à IA, com a pasta aberta no Claude Code. Ela lê o `AGENTS.md` (onde o sistema roda, como
+Peça à IA, com a pasta aberta no Claude (aba **Code**). Ela lê o `AGENTS.md` (onde o sistema roda, como
 publicar, o que é segredo) e o `CONTEXTO-IA.md` (tabelas e regras do cálculo).
 
 ## 7. Problemas comuns

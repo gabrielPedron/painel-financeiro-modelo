@@ -1,231 +1,213 @@
-# Roteiro de instalação
+# Roteiro de instalação (para a IA)
 
-Para a IA (Claude Code) que está instalando este sistema junto com o dono da loja. Execute os
-passos em ordem. Cada passo termina num **Pronto quando**: só avance depois de conferir.
+Para a IA (Claude Code) que instala este sistema com o dono da loja, normalmente numa call de até
+40 minutos com o mentor. O dono não é programador. O guia dele é o `PASSO-A-PASSO.md`; este
+arquivo é o seu.
 
-## Quem faz o quê
+## Como trabalhar
 
-- **Você (IA)** roda os comandos, edita os arquivos de configuração e confere cada passo.
-- **O dono da loja** cria as contas, digita senhas e cola chaves secretas, sempre no terminal
-  dele, no painel do serviço ou no arquivo `.env.local`.
-- **Segredo** é: senha, chave `sb_secret_...`, Client Secret do Mercado Livre, token. Segredo
-  viaja só entre o dono e o serviço. Quando um passo precisar de um, diga onde ele deve digitar
-  e espere ele avisar que terminou.
-- Valores **públicos** podem aparecer na conversa: project ref, URL do Supabase, chave
-  `sb_publishable_...`, endereço do app, Client ID do Mercado Livre.
+- **Você faz tudo o que um comando faz.** O dono nunca abre terminal nem digita comando. Ele só
+  clica em páginas que você abre ou manda, e cola senhas num arquivo que você abre para ele.
+- **Junte o trabalho dele em poucas rodadas.** São quatro paradas para o dono (rodadas 1, 2, 3 e
+  5), e cada mensagem sua para ele é uma lista numerada curta, com os links clicáveis e os valores
+  exatos para copiar. Entre uma parada e outra, faça tudo o que der sem perguntar nada.
+- **Fale como para quem nunca programou.** Nada de "env", "deploy", "migração" ou "commit" nas
+  mensagens para o dono. Diga o que ele vai ver e onde clicar. Comece cada rodada dizendo quanto
+  falta ("Parte 2 de 4, uns 5 minutos").
+- **Segredo** é: senha, chave `sb_secret_...`, Client Secret do Mercado Livre, token. Segredo nunca
+  passa pela conversa: o dono cola no arquivo `.env.local`, que você abre no Bloco de Notas, ou
+  direto na tela do sistema. Não leia o `.env.local` para a conversa; os scripts leem por você.
+  Se o dono colar um segredo no chat, avise que aquele valor precisa ser trocado no painel do
+  serviço e siga com o novo.
+- **Público** pode aparecer na conversa: endereço do projeto no Supabase, chave
+  `sb_publishable_...`, endereço do app, Client ID do Mercado Livre, e-mail do dono.
 - O sistema só **lê** a conta do Mercado Livre. Nenhum passo pede permissão de escrita.
-- **Windows:** quando o dono digitar no PowerShell um comando que começa com `npx`, peça que
-  ele escreva `npx.cmd` no lugar de `npx` (o resto do comando é igual). O PowerShell vem com
-  scripts bloqueados e o `npx` comum falha com "a execução de scripts foi desabilitada". Deixe a
-  política de execução do Windows como está: o `npx.cmd` resolve sem mexer nela. O PowerShell
-  comum basta; o de administrador não é necessário.
+- **Comandos no Windows.** Se você roda pelo PowerShell, use `npx.cmd` no lugar de `npx` (o
+  PowerShell bloqueia o `npx.ps1`). Comandos que esperam o navegador (`wrangler login`) precisam
+  de tempo: dê até 5 minutos antes de desistir.
+- Se algo falhar de um jeito que [Se travar](#se-travar) não cobre: pare, mostre o erro exato (sem
+  segredo) e pergunte. Seguir com um passo quebrado custa mais que parar.
 
-Se um comando falhar de um jeito que a seção [Se travar](#se-travar) não cobre: pare, mostre o
-erro exato (sem segredo) e pergunte. Seguir adiante com um passo quebrado custa mais que parar.
+## Rodada 0. Conferir o que o dono fez antes da call
 
-## Antes de começar (o dono faz sozinho, antes da instalação)
+Pergunte numa mensagem só, com sim ou não para cada item (a lista está no `PASSO-A-PASSO.md`):
 
-1. Conta no **GitHub**.
-2. Conta na **Cloudflare** com o plano pago do Workers ativo (cerca de US$ 5 por mês). O
-   plano gratuito corta a sincronização no meio: ela passa do limite de processamento.
-3. Conta no **Supabase** (o plano gratuito serve para começar), com **vaga para um projeto
-   novo**. Cada pessoa tem no máximo 2 projetos gratuitos ativos, somando todas as
-   organizações dela. Se as duas vagas já estiverem ocupadas, o caminho sem custo é criar a
-   conta do Supabase com outro e-mail.
-   - Para conferir: em `https://supabase.com/dashboard`, clicar em **New project**. Se aparecer
-     "Unable to create project under Free Plan organization", não há vaga.
-4. **Aplicação no Mercado Livre**: entrar em `https://developers.mercadolivre.com.br` com a
-   conta titular da loja e pedir a criação da aplicação. O Mercado Livre analisa o pedido, e
-   isso pode levar dias: é o passo que mais atrasa. A aplicação fica presa a essa conta para
-   sempre, então tem que ser a da loja, e não a de um funcionário ou do mentor.
-5. No computador: Git, [Bun](https://bun.sh) e Node 24 ou mais novo.
-6. **Convite do mentor aceito.** O repositório-modelo é privado: o mentor convida o usuário do
-   GitHub do dono, o convite chega por e-mail, e só depois de aceitar aparece o botão
-   **Use this template**. Sem o convite, o link do modelo dá "404".
+1. Tem conta no GitHub e este repositório é a cópia **dele** (feita com **Use this template**)?
+2. Tem conta na Cloudflare com o plano pago do Workers ativo (cerca de US$ 5 por mês)?
+3. Tem conta no Supabase com vaga para um projeto novo?
+4. Pediu a aplicação no Mercado Livre, com a conta titular da loja? Já foi liberada?
 
-**Pronto quando:** `git --version`, `bun --version` e `node --version` respondem (Node 24+), o
-dono confirma as três contas e consegue abrir o repositório-modelo no GitHub. A aplicação do Mercado Livre pode ainda estar em análise: ela
-só entra no passo 8.
+Enquanto ele responde, confira você mesmo:
 
-## 1. Copiar o modelo
+- `git remote -v` aponta para o repositório do dono, não para o modelo. Se for o modelo, pare:
+  as mudanças dele iriam para o lugar errado.
+- `node --version` responde 24 ou mais. Se não tiver Node, o dono instala pelo site
+  `https://nodejs.org` (botão da versão LTS, avançar até o fim) e reabre o Claude.
+- `bun --version` responde. Se não, rode `npm install -g bun`.
 
-O dono já criou a cópia dele com **Use this template** e te mandou clonar (seção "Como
-instalar" do `README.md`). Se o clone ainda não foi feito, peça o endereço do repositório **dele**
-(não o do modelo) e clone:
+Um "não" nos itens 2 ou 3 impede a instalação hoje: diga o que falta e pare. Um "não" no item 4
+não impede: o sistema fica no ar e o Mercado Livre entra quando a aplicação for liberada.
 
-```bash
-git clone <endereço do repositório dele> sistema-financeiro
-```
+## Rodada 1. Preparar e publicar a primeira versão
 
-Depois, dentro da pasta clonada:
+Você, sem perguntar nada:
 
-```bash
-bun install
-```
+1. `bun install` e `bun run test` (precisa terminar com `fail 0`).
+2. Copie `.env.example` para `.env` e `.env.local.example` para `.env.local`.
+3. Em `wrangler.jsonc`, troque `NOME-DO-SEU-SISTEMA` por `painel-financeiro` (ou outro nome em
+   minúsculas, números e hífen, se o dono pediu).
+4. Rode `npx wrangler login`. Antes, avise o dono: "Vai abrir uma página da Cloudflare. Entre na
+   sua conta e clique em **Allow**." O comando termina sozinho quando ele autorizar.
+5. `bun run build && npx wrangler deploy`. Essa primeira versão ainda não funciona: serve para
+   descobrir o endereço do app, que aparece no fim, no formato
+   `https://painel-financeiro.<subdomínio>.workers.dev`.
+6. Grave esse endereço, sem barra no final, em `APP_BASE_URL` no `wrangler.jsonc`.
 
-Confira com `git remote -v` que o endereço é o repositório do dono. Se for o do modelo, pare:
-as mudanças dele iriam para o lugar errado.
+**Pronto quando:** você tem o endereço do app. Daqui em diante, `<app>` é esse endereço.
 
-**Pronto quando:** `bun run test` termina com `fail 0`.
+## Rodada 2. O dono cria o projeto no Supabase
 
-## 2. Criar o projeto no Supabase
+Abra o `.env.local` no Bloco de Notas para ele (`notepad .env.local` no Windows,
+`open -e .env.local` no Mac) e mande:
 
-O dono cria o projeto em `https://supabase.com/dashboard` (região São Paulo) e guarda a senha
-do banco num gerenciador de senhas. Peça a ele três valores públicos, de
-**Project Settings > API Keys** e **Data API**: project ref, URL do projeto e chave publicável.
+> **Parte 1 de 4: criar o banco de dados (uns 4 minutos)**
+>
+> 1. Abra https://supabase.com/dashboard/projects e clique em **New project**.
+> 2. Nome: `painel-financeiro`. Região: **South America (São Paulo)**.
+> 3. Na senha do banco, clique em **Generate password** e depois em **Copy**.
+> 4. No Bloco de Notas que eu abri, cole a senha logo depois de `SUPABASE_DB_PASSWORD=` (sem
+>    espaço) e salve com **Ctrl+S**. Guarde a senha também no seu gerenciador de senhas.
+> 5. Clique em **Create new project** e espere a tela do projeto carregar (1 a 2 minutos).
+> 6. Copie o endereço da barra do navegador e cole aqui no chat.
 
-Com eles:
+Do endereço colado (`https://supabase.com/dashboard/project/<ref>`), tire o `<ref>` de 20 letras.
+Troque `SEU_PROJECT_REF` por esse ref em todas as linhas do `.env` e no `SUPABASE_URL` do
+`wrangler.jsonc`.
 
-1. Copie `.env.example` para `.env` e preencha as seis linhas.
-2. Em `wrangler.jsonc`, preencha `name` (nome do sistema: minúsculas, números e hífen) e, em
-   `vars`, `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY`. Deixe `APP_BASE_URL` vazio por enquanto.
-
-**Pronto quando:** a busca por `SEU_PROJECT_REF`, `sb_publishable_...` e `NOME-DO-SEU-SISTEMA`
-em `.env` e `wrangler.jsonc` não acha nada.
-
-## 3. Subir o banco
-
-Estes comandos pedem login e senha: o dono roda no terminal dele, um por vez. Eles levam a
-versão testada da ferramenta (`@3.2.0`): mantenha como está, mesmo que ela avise de versão nova.
+Então suba o banco, antes de mandar a rodada 3:
 
 ```bash
-npx supabase@3.2.0 login
+node scripts/subir-banco.mjs
 ```
+
+Num projeto novo, ele lista só `20260101000000_base.sql`. A instalação já é o pedido do dono:
+aplique sem perguntar.
 
 ```bash
-npx supabase@3.2.0 init
+node scripts/subir-banco.mjs --aplicar
 ```
 
-```bash
-npx supabase@3.2.0 link --project-ref <project ref>
-```
+Se ele não conectar logo depois de o projeto ser criado, espere 1 minuto e tente de novo: o
+projeto ainda está ligando.
 
-```bash
-npx supabase@3.2.0 db push --remote
-```
+**Pronto quando:** `node scripts/subir-banco.mjs` responde "O banco já está em dia".
 
-O `link` e o `db push` pedem a senha do banco do passo 2. O `db push` aplica uma migração
-única, `supabase/migrations/20260101000000_base.sql`: tabelas, funções, permissões,
-classificação das cobranças do Mercado Livre e agendamentos. Leva poucos segundos.
+## Rodada 3. O dono faz todos os cliques do Supabase e do Mercado Livre
 
-Se quem roda o `db push` é você (IA), a ferramenta percebe e recusa gravar sem confirmação
-(`Confirmation required ... running in agent mode`). Rode antes `npx supabase@3.2.0 db push --remote --dry-run`,
-mostre ao dono que ele aplica só `20260101000000_base.sql` num projeto vazio, e com o sim dele
-rode `npx supabase@3.2.0 db push --remote --yes`.
+Monte os links com o `<ref>` e o `<app>` reais e mande numa mensagem só:
 
-**Pronto quando:** `npx supabase@3.2.0 migration list --remote` mostra `20260101000000` nas duas
-colunas (local e remoto).
+> **Parte 2 de 4: cliques no Supabase e no Mercado Livre (uns 10 minutos)**
+>
+> **Supabase**
+>
+> 1. Abra https://supabase.com/dashboard/project/<ref>/settings/api-keys
+>    - Em **Secret keys**, copie a chave (começa com `sb_secret_`), cole no Bloco de Notas depois
+>      de `SUPABASE_SERVICE_ROLE_KEY=` e salve com **Ctrl+S**.
+>    - Em **Publishable key**, copie a chave (começa com `sb_publishable_`) e cole aqui no chat.
+> 2. Abra https://supabase.com/dashboard/project/<ref>/auth/providers, desligue
+>    **Allow new users to sign up** e clique em **Save**. Assim ninguém de fora cria conta no
+>    seu sistema.
+> 3. Abra https://supabase.com/dashboard/project/<ref>/auth/users, clique em **Add user >
+>    Create new user**, ponha o seu e-mail e uma senha, marque **Auto Confirm User** e crie.
+>    Esse é o seu login no sistema.
+> 4. Abra https://supabase.com/dashboard/project/<ref>/auth/url-configuration
+>    - **Site URL:** `<app>` e **Save**.
+>    - Em **Redirect URLs**, **Add URL**: `<app>/redefinir-senha` e **Save**.
+>
+> **Mercado Livre** (pule se a aplicação ainda está em análise)
+>
+> 5. Em https://developers.mercadolivre.com.br, abra a sua aplicação e edite:
+>    - **URI de redirect:** `<app>/api/ml/callback`
+>    - **Permissões**, todas em **somente leitura**: Usuários, Vendas e envios, Faturamento,
+>      Publicidade, Métricas do negócio, Publicação e sincronização, Comunicação pré e pós-venda.
+>      Marque também o **acesso offline**. Salve.
+>
+> No fim, me mande aqui: a chave `sb_publishable_`, o e-mail do passo 3 e o seu nome.
 
-## 4. Fechar o cadastro e criar o usuário do dono
+## Rodada 4. Ligar tudo
 
-No painel do Supabase, o dono:
+Você, sem perguntar nada:
 
-1. Em **Authentication > Sign In / Providers**, desliga **Allow new users to sign up**. O
-   sistema é fechado: usuários novos entram depois, pela tela Configurações > Usuários.
-2. Em **Authentication > Users > Add user**, cria o próprio usuário com e-mail e senha,
-   marcando **Auto Confirm User**.
+1. Preencha a chave publicável no `.env` e em `SUPABASE_PUBLISHABLE_KEY` no `wrangler.jsonc`.
+   Confira que nada mais sobrou de exemplo: a busca por `SEU_PROJECT_REF`, `sb_publishable_...` e
+   `NOME-DO-SEU-SISTEMA` em `.env` e `wrangler.jsonc` não acha nada.
+2. `bun run build && npx wrangler deploy`.
+3. Ligue o banco ao app:
 
-**Pronto quando:** o usuário aparece na lista de Users e o cadastro público está desligado.
-Projeto novo nasce com o cadastro **ligado**; se o dono esquecer, o `configurar.mjs` do passo 7
-para e mostra onde desligar.
+   ```bash
+   node scripts/configurar.mjs --endereco <app> --dono <e-mail> --nome "<nome>"
+   ```
 
-## 5. Publicar o app
+   Ele confere se o cadastro público está desligado, grava a chave secreta e o segredo do
+   agendador no Worker e no cofre do Supabase, e torna o usuário dono da equipe. Nada disso
+   aparece na tela. Se ele parar, a mensagem diz o que o dono precisa corrigir: mande só esse
+   item para ele.
+4. `node scripts/conferir.mjs`: precisa mostrar o app no ar, o agendador protegido, o cadastro
+   fechado e o dono definido.
+5. Guarde a configuração (os dois arquivos só têm valores públicos):
 
-```bash
-npx wrangler login
-```
+   ```bash
+   git add .env wrangler.jsonc && git commit -m "Configuração da minha instalação" && git push
+   ```
 
-```bash
-bun run build && npx wrangler deploy
-```
+   Confira que `git ls-files` não lista `.env.local`.
 
-A publicação mostra o endereço do app, no formato
-`https://<nome>.<subdomínio-da-conta>.workers.dev`. Grave esse endereço, sem barra no final,
-em `APP_BASE_URL` no `wrangler.jsonc` e publique de novo com o mesmo comando.
+**Pronto quando:** o `conferir.mjs` não aponta problema e o `git status` está limpo.
 
-**Pronto quando:** abrir `<endereço>/login` no navegador mostra a tela de entrada.
+## Rodada 5. O dono entra e conecta o Mercado Livre
 
-## 6. Avisar o Supabase do endereço
+> **Parte 3 de 4: entrar no sistema (uns 5 minutos)**
+>
+> 1. Abra <app>/login e entre com o e-mail e a senha que você criou no Supabase.
+> 2. Vá em **Configurações > Integrações > Adicionar integração**.
+> 3. Cole o **Client ID** e o **Client Secret** da sua aplicação do Mercado Livre e clique em
+>    **Conectar**. O Mercado Livre pede para você autorizar: autorize.
+> 4. Me avise quando a integração aparecer como **conectada**.
 
-No painel, em **Authentication > URL Configuration**, o dono põe:
+Se a aplicação do Mercado Livre ainda está em análise, peça só o item 1 e explique que os itens 2
+a 4 ficam para quando ela for liberada (o `PASSO-A-PASSO.md` ensina).
 
-- **Site URL**: o endereço do app.
-- **Redirect URLs**: `<endereço>/redefinir-senha`.
+## Rodada 6. Conferir e entregar
 
-**Pronto quando:** o dono abre `<endereço>/recuperar-senha`, pede o link com o e-mail dele, e o
-link que chega por e-mail abre a tela "Definir nova senha" no endereço do app. Se o link
-apontar para `localhost`, o Site URL ou a Redirect URL não foi salva. O dono não precisa trocar a
-senha: basta conferir para onde o link leva.
+Rode `node scripts/conferir.mjs`. Ele mostra a conta conectada, a fila de sincronização e quantos
+pedidos e pagamentos já chegaram. A primeira carga leva de minutos a horas: na call basta ver a
+fila andando e os primeiros pedidos.
 
-## 7. Ligar o banco ao app
+Termine com a **Parte 4 de 4** para o dono, curta:
 
-1. Copie `.env.local.example` para `.env.local`.
-2. O dono abre `.env.local` no editor e cola a chave secreta do Supabase
-   (**Project Settings > API Keys > Secret keys**) depois de `SUPABASE_SERVICE_ROLE_KEY=`.
-   Esse arquivo fica fora do Git. Deixe o conteúdo dele com o dono: você só precisa saber que foi preenchido.
-3. Rode:
+- o endereço do sistema e que vale salvar nos favoritos;
+- o que fazer nos primeiros dias: seção "Depois da call" do `PASSO-A-PASSO.md`;
+- se a conexão ficou para depois, como fazer quando a aplicação do Mercado Livre for liberada.
 
-```bash
-node scripts/configurar.mjs --endereco <endereço do app> --dono <e-mail do passo 4> --nome "<nome do dono>"
-```
-
-O script grava a chave secreta e o segredo do agendador no Worker, grava o endereço e o mesmo
-segredo no cofre do Supabase e transforma o usuário em dono da equipe. Nada disso aparece na tela.
-
-**Pronto quando:** o script termina com `Pronto.` e este comando devolve `401`:
-
-```bash
-curl -s -o /dev/null -w "%{http_code}" -X POST <endereço do app>/api/public/hooks/ml-worker
-```
-
-O `401` prova que os ganchos do agendador recusam quem chega sem o segredo.
-
-## 8. Entrar e conectar o Mercado Livre
-
-1. O dono entra em `<endereço>/login` com o e-mail e a senha do passo 4.
-2. Em `https://developers.mercadolivre.com.br`, na aplicação dele:
-   - **URI de redirect**: `<endereço>/api/ml/callback`, idêntica, letra por letra.
-   - **Permissões**, todas em **somente leitura**: Usuários, Vendas e envios, Faturamento,
-     Publicidade, Métricas do negócio, Publicação e sincronização, Comunicação pré e pós-venda.
-     Marque também o acesso offline.
-3. No sistema, em **Configurações > Integrações > Adicionar integração**, o dono cola o
-   Client ID e o Client Secret e clica em **Conectar**. O Mercado Livre pede a autorização e
-   devolve para o sistema.
-
-**Pronto quando:** a integração aparece como **conectada** e a fila em Configurações >
-Integrações mostra itens sendo processados. O histórico completo leva de minutos a horas.
-
-Quando a fila esvaziar, confira os **pagamentos**: na Conciliação, aba de recebimentos, devem
-aparecer valores para as vendas do período. Pedidos chegando com recebimentos vazios é o caso da
-última linha de [Se travar](#se-travar): pare e avise o mentor.
-
-## 9. Guardar a configuração
-
-```bash
-git add .env wrangler.jsonc supabase/config.toml && git commit -m "Configuração da minha instalação" && git push
-```
-
-Esses três arquivos só têm valores públicos.
-
-**Pronto quando:** `git status` está limpo e `git ls-files` não lista `.env.local`.
-
-Depois disso, siga a seção "Primeiros dias" do `README.md`: custo dos produtos e alíquota de imposto.
+Se depois de horas os pedidos chegam e os pagamentos não, é o caso da última linha de
+[Se travar](#se-travar).
 
 ## Se travar
 
 | O que aparece | O que é | O que fazer |
 |---|---|---|
-| `npx.ps1 não pode ser carregado` ou `a execução de scripts foi desabilitada` | PowerShell do Windows com scripts bloqueados | Repetir o comando com `npx.cmd` no lugar de `npx` |
-| `Confirmation required ... agent mode` no `db push` | A IA rodou o comando e a ferramenta pede confirmação | `--dry-run` primeiro, mostrar ao dono, depois `--yes` |
-| `could not translate host name` ou `Network is unreachable` ao falar com o banco | A conexão direta do Supabase gratuito é só IPv6, e a rede do computador está sem IPv6 | Usar o pooler, como mostra **Connect** no painel do projeto (endereço `aws-...pooler.supabase.com`, usuário `postgres.<project ref>`) |
-| `Cannot find project ref` | O `link` do passo 3 não rodou nesta pasta | Rodar `npx supabase@3.2.0 link --project-ref <ref>` |
-| Erro de limite de CPU no `wrangler deploy` | Plano gratuito do Workers | Ativar o plano pago na Cloudflare e publicar de novo |
-| `APP_BASE_URL não configurada` ao conectar o Mercado Livre | Faltou a segunda publicação do passo 5 | Preencher `APP_BASE_URL` e publicar de novo |
-| `o cadastro público do Supabase está LIGADO` no `configurar.mjs` | O passo 4 ficou pela metade | Desligar **Allow new users to sign up** em Authentication > Sign In / Providers e rodar o `configurar.mjs` de novo |
+| `npx.ps1 não pode ser carregado` ou `a execução de scripts foi desabilitada` | Comando rodado no PowerShell do Windows | Use `npx.cmd` |
+| Erro de limite de CPU no `wrangler deploy` | Plano gratuito do Workers | O dono ativa o plano pago na Cloudflare; publique de novo |
+| `You need to register a workers.dev subdomain` (ou parecido) no `wrangler deploy` | Conta nova da Cloudflare sem subdomínio | O dono abre **Workers & Pages** no painel da Cloudflare, escolhe o subdomínio e salva; publique de novo |
+| `a senha do banco não confere` no `subir-banco.mjs` | Senha errada ou não salva no `.env.local` | O dono confere se salvou o Bloco de Notas; se perdeu a senha, gera outra em Project Settings > Database > Reset database password |
+| `não consegui falar com o banco` no `subir-banco.mjs` | Projeto ainda ligando, ou nenhuma conexão automática funcionou na rede do dono | Espere 1 minuto e tente de novo; se continuar, o dono copia o endereço em **Connect > Session pooler**, troca `[YOUR-PASSWORD]` pela senha e cola no `.env.local` como `SUPABASE_DB_URL=...` |
 | `Unable to create project under Free Plan organization` | A conta do Supabase já tem 2 projetos gratuitos ativos | Criar a conta do Supabase com outro e-mail, ou liberar uma vaga |
-| `Usuário ... não existe` no `configurar.mjs` | O usuário do passo 4 não foi criado, ou o e-mail está diferente | Conferir em Authentication > Users |
+| `o cadastro público do Supabase está LIGADO` no `configurar.mjs` | O item 2 da rodada 3 ficou sem salvar | O dono desliga **Allow new users to sign up** e clica em **Save**; rode de novo |
+| `Usuário ... não existe` no `configurar.mjs` | O usuário do item 3 não foi criado, ou o e-mail está diferente | Conferir em Authentication > Users |
 | `Já existe um dono da equipe` | A instalação já tem dono | Novos usuários: Configurações > Usuários |
-| `o banco não respondeu` no `configurar.mjs` | Chave errada no `.env.local` ou passo 3 incompleto | Conferir os dois |
-| `PA_UNAUTHORIZED_RESULT_FROM_POLICIES` na sincronização | Falta uma permissão do passo 8 na aplicação do Mercado Livre | Marcar a permissão em leitura e conectar de novo |
-| A conexão do Mercado Livre volta com erro de `redirect_uri` | O endereço cadastrado difere do `APP_BASE_URL` | Deixar os dois idênticos |
+| `o banco não respondeu` no `configurar.mjs` | Chave secreta errada no `.env.local` ou banco não subiu | Conferir os dois |
+| `APP_BASE_URL não configurada` ao conectar o Mercado Livre | O endereço não entrou no `wrangler.jsonc` antes da publicação | Preencher e publicar de novo |
+| A conexão do Mercado Livre volta com erro de `redirect_uri` | O endereço cadastrado na aplicação difere do `<app>` | Deixar idênticos, letra por letra |
+| O link de "Esqueci minha senha" abre `localhost` | Site URL ou Redirect URL sem salvar | Refazer o item 4 da rodada 3 |
+| `PA_UNAUTHORIZED_RESULT_FROM_POLICIES` na sincronização | Falta uma permissão na aplicação do Mercado Livre | Marcar a permissão em leitura e conectar de novo |
 | Pagamentos não sincronizam, o resto sim | A aplicação nova pode não ter acesso às APIs do Mercado Pago | Parar e avisar o mentor: é um caso ainda não confirmado |

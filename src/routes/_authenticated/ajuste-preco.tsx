@@ -82,11 +82,8 @@ function periodo(period: PeriodKey, custom: { from?: Date; to?: Date }): { from:
 const ddmm = (dia: string) => dia.split("-").reverse().slice(0, 2).join("/");
 const ddmmaa = (dia: string) => dia.split("-").reverse().join("/");
 
-const MOTIVO_INICIO: Record<Inicio["motivo"], string> = {
-  hoje: "a partir de hoje",
-  intervalo: `${INTERVALO_DIAS} dias depois da última mudança do cheio`,
-  fim_da_campanha: "no dia seguinte ao fim da campanha própria (preço de promoção ativa só baixa)",
-};
+const motivoInicio = (motivo: Inicio["motivo"], dias: number) =>
+  motivo === "intervalo" ? `${dias} dias depois da última mudança do cheio` : "a partir de hoje";
 
 function AjustePrecoPage() {
   const qc = useQueryClient();
@@ -248,7 +245,8 @@ function AjustePrecoPage() {
                 em que a margem do anúncio chega a {formatPercent(margem, 1)}, com o que o período mostra: comissão, imposto e
                 Ads como % do preço; CMV, frete e rateio dos custos do período por unidade; o frete pago pelo comprador fixo
                 por unidade. O cheio-alvo aplica o desconto da promoção ativa. Cada passo sobe até {formatPercent(passo, 1)} do
-                cheio, arredondado para baixo no centavo, um a cada {intervaloDias} dias.
+                cheio, arredondado para baixo no centavo, um a cada {intervaloDias} dias contados da última mudança do
+                cheio, mesmo com campanha própria ativa: o preço da promoção fica como está na central de promoções.
                 {lidoMaisAntigo ? <> Preços do ML lidos em {formatDateTime(new Date(lidoMaisAntigo))}.</> : null}
               </p>
             </CardContent>
@@ -330,10 +328,7 @@ function LinhaAnuncio({ l, hoje, passo, intervaloDias, aberto, alternar }: {
   l: Linha; hoje: string; passo: number; intervaloDias: number; aberto: boolean; alternar: () => void;
 }) {
   const cheioHoje = l.cheio_lido;
-  const inicio = inicioDaProgressao({
-    hoje, cheioAlteradoEm: l.cheio_alterado_em, promocaoFim: l.promocao_fim,
-    promocaoCampanha: l.promocao_campanha, intervaloDias,
-  });
+  const inicio = inicioDaProgressao({ hoje, cheioAlteradoEm: l.cheio_alterado_em, intervaloDias });
   const prog: Progressao = cheioHoje
     ? progressao({ cheioAtual: cheioHoje, cheioAlvo: l.cheio_alvo, inicio: inicio.data, passoPct: passo, intervaloDias })
     : { passos: [], incompleta: false };
@@ -413,7 +408,7 @@ function LinhaAnuncio({ l, hoje, passo, intervaloDias, aberto, alternar }: {
         <TableRow className="bg-muted/10 hover:bg-muted/10">
           <TableCell></TableCell>
           <TableCell colSpan={10} className="py-3">
-            <Detalhe l={l} prog={prog} inicio={inicio} aviso={aviso} passo={passo} etapaBase={et} />
+            <Detalhe l={l} prog={prog} inicio={inicio} aviso={aviso} passo={passo} intervaloDias={intervaloDias} etapaBase={et} />
           </TableCell>
         </TableRow>
       ) : null}
@@ -421,9 +416,9 @@ function LinhaAnuncio({ l, hoje, passo, intervaloDias, aberto, alternar }: {
   );
 }
 
-function Detalhe({ l, prog, inicio, aviso, passo, etapaBase }: {
+function Detalhe({ l, prog, inicio, aviso, passo, intervaloDias, etapaBase }: {
   l: Linha; prog: Progressao; inicio: Inicio; aviso: string | null; passo: number;
-  etapaBase: ReturnType<typeof etapa> | null;
+  intervaloDias: number; etapaBase: ReturnType<typeof etapa> | null;
 }) {
   return (
     <div className="space-y-3 text-xs">
@@ -463,7 +458,7 @@ function Detalhe({ l, prog, inicio, aviso, passo, etapaBase }: {
       ) : (
         <div className="space-y-1">
           <p className="text-muted-foreground">
-            Progressão prevista, {MOTIVO_INICIO[inicio.motivo]}: do cheio de {formatBRL(l.cheio_lido)} ao cheio-alvo de{" "}
+            Progressão prevista, {motivoInicio(inicio.motivo, intervaloDias)}: do cheio de {formatBRL(l.cheio_lido)} ao cheio-alvo de{" "}
             {formatBRL(l.cheio_alvo)}, até {formatPercent(passo, 1)} por passo.
           </p>
           <div className="overflow-x-auto">

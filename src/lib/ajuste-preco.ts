@@ -119,31 +119,25 @@ export function campanhaPropria(campanha: string | null | undefined): boolean {
   return typeof campanha === "string" && campanha.startsWith("C-");
 }
 
-export type Inicio = { data: string; motivo: "hoje" | "intervalo" | "fim_da_campanha" };
+export type Inicio = { data: string; motivo: "hoje" | "intervalo" };
 
 /**
- * A data do 1º passo: hoje, ou `intervaloDias` depois da última mudança do cheio, ou, em campanha
- * própria, o dia seguinte ao fim dela (o preço de promoção ativa só baixa: o passo é na virada).
- * Vale a mais tardia.
+ * A data do 1º passo: `intervaloDias` depois da última mudança do cheio (o `last_updated` do preço
+ * standard no /items/{id}/prices), ou hoje, se isso já passou ou se a data não veio.
+ * Não espera o fim da campanha própria (regra do dono da conta desde 18/11/2026): o cheio sobe por
+ * baixo, e o preço da promoção fica como está na central de promoções.
  */
 export function inicioDaProgressao(args: {
   hoje: string;
   cheioAlteradoEm: string | null;
-  promocaoFim: string | null;
-  promocaoCampanha: string | null;
   intervaloDias?: number;
 }): Inicio {
   const intervalo = args.intervaloDias ?? INTERVALO_DIAS;
-  let melhor: Inicio = { data: args.hoje, motivo: "hoje" };
   if (args.cheioAlteradoEm) {
     const d = somarDias(diaBR(args.cheioAlteradoEm), intervalo);
-    if (d > melhor.data) melhor = { data: d, motivo: "intervalo" };
+    if (d > args.hoje) return { data: d, motivo: "intervalo" };
   }
-  if (args.promocaoFim && campanhaPropria(args.promocaoCampanha)) {
-    const d = somarDias(diaBR(args.promocaoFim), 1);
-    if (d > melhor.data) melhor = { data: d, motivo: "fim_da_campanha" };
-  }
-  return melhor;
+  return { data: args.hoje, motivo: "hoje" };
 }
 
 /**

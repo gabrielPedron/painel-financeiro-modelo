@@ -59,20 +59,14 @@ test("etapa: passos inteiros de 1,5% entre o cheio-base e o de hoje", () => {
   assert.deepEqual(etapa(78.99, 75), { passos: 0, parcial: false, abaixoDaBase: true });
 });
 
-test("início: hoje, 10 dias depois da última mudança ou o dia seguinte ao fim da campanha própria", () => {
-  const base = { hoje: "2026-11-18", cheioAlteradoEm: "2026-10-26T18:11:35Z", promocaoFim: null, promocaoCampanha: null };
+test("início: 10 dias depois da última mudança do cheio, ou hoje se já passou ou se não há data", () => {
+  const base = { hoje: "2026-11-18", cheioAlteradoEm: "2026-10-26T18:11:35Z" };
   assert.deepEqual(inicioDaProgressao(base), { data: "2026-11-18", motivo: "hoje" });
   assert.deepEqual(inicioDaProgressao({ ...base, cheioAlteradoEm: "2026-11-15T13:00:00Z" }), { data: "2026-11-25", motivo: "intervalo" });
-  // BLACK NOVEMBER: o /prices dá 30/11 02:59Z, que em Brasília é 29/11; o passo é em 30/11
-  assert.deepEqual(
-    inicioDaProgressao({ ...base, promocaoFim: "2026-11-30T02:59:59Z", promocaoCampanha: "C-MLB6284610" }),
-    { data: "2026-11-30", motivo: "fim_da_campanha" },
-  );
-  // promoção do ML (não é campanha própria) não segura o passo
-  assert.deepEqual(
-    inicioDaProgressao({ ...base, promocaoFim: "2026-11-30T02:59:59Z", promocaoCampanha: "P-MLB123" }),
-    { data: "2026-11-18", motivo: "hoje" },
-  );
+  // a mudança é contada no dia de Brasília: 09/11 01:00Z ainda é 08/11 lá, e o passo cai em 18/11, hoje
+  assert.deepEqual(inicioDaProgressao({ ...base, cheioAlteradoEm: "2026-11-09T01:00:00Z" }), { data: "2026-11-18", motivo: "hoje" });
+  assert.deepEqual(inicioDaProgressao({ ...base, cheioAlteradoEm: null }), { data: "2026-11-18", motivo: "hoje" });
+  assert.deepEqual(inicioDaProgressao({ ...base, cheioAlteradoEm: "2026-11-15T13:00:00Z", intervaloDias: 7 }), { data: "2026-11-22", motivo: "intervalo" });
 });
 
 test("datas: dia de Brasília e soma de dias atravessando o mês", () => {

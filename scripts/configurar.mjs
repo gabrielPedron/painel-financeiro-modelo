@@ -65,7 +65,7 @@ const supabase = createClient(url, chave, { auth: { persistSession: false, autoR
 
 // Prova que a chave e o banco respondem antes de mexer em qualquer coisa.
 const { error: erroBanco } = await supabase.from("billing_subtype_map").select("sub_type", { count: "exact", head: true });
-if (erroBanco) parar(`o banco não respondeu (${erroBanco.message}). Confira a chave e se "npx supabase@3.2.0 db push --remote" já rodou.`);
+if (erroBanco) parar(`o banco não respondeu (${erroBanco.message}). Confira a chave e se o banco já foi instalado (node scripts/subir-banco.mjs).`);
 
 // Projeto novo do Supabase nasce com o cadastro aberto: qualquer pessoa com a chave pública (que está
 // no navegador) criaria conta e gravaria dados e arquivos. O sistema é fechado; o dono cria usuários
