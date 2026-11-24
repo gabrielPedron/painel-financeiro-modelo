@@ -186,6 +186,8 @@ fila andando e os primeiros pedidos.
 Termine com a **Parte 4 de 4** para o dono, curta:
 
 - o endereço do sistema e que vale salvar nos favoritos;
+- a próxima tarefa, **a validação dos números de um mês fechado** (`APURACAO.md`), que começa quando
+  a primeira sincronização terminar: pode ser na mesma hora ou numa conversa nova;
 - o que fazer nos primeiros dias: seção "Depois da call" do `PASSO-A-PASSO.md`;
 - se a conexão ficou para depois, como fazer quando a aplicação do Mercado Livre for liberada.
 

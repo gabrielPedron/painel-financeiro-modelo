@@ -4,6 +4,8 @@
 - **Banco, login e cofre:** um projeto Supabase. Valores públicos em `.env`.
 - **Instalação do zero:** `INSTALAR.md`. Siga quando `wrangler.jsonc` ainda tiver `NOME-DO-SEU-SISTEMA`.
   O dono não programa: o guia dele é `PASSO-A-PASSO.md`. Fale com ele sem termos técnicos.
+- **Validar os números:** `APURACAO.md`, a primeira tarefa depois que o Mercado Livre conecta. Os
+  resultados ficam em `docs/apuracao/`.
 - **Conferir se está funcionando:** `node scripts/conferir.mjs` (só lê; mostra app, banco, login e Mercado Livre).
 - **Publicar:** `bun run build && npx wrangler deploy`.
 - **Regras do cálculo e tabelas:** `CONTEXTO-IA.md`. Leia antes de mexer em valores, margem ou conciliação.

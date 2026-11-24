@@ -49,6 +49,18 @@ fica no ar e você conecta depois (veja abaixo).
 
 ## Depois da call
 
+**A primeira tarefa: validar os números.** Antes de usar o sistema para decidir qualquer coisa,
+a IA confere um mês inteiro que já terminou, cruzando três fontes: o que o sistema calculou, o que
+o Mercado Livre diz que vendeu e cobrou, e o extrato do Mercado Pago. Quando a primeira
+sincronização terminar, abra o Claude na pasta do sistema e mande:
+
+> Siga o APURACAO.md.
+
+Ela vai te pedir três arquivos do mês para baixar (vendas e faturamento do Mercado Livre, extrato
+do Mercado Pago) e uma pasta para salvar. Esses arquivos ficam só no seu computador. No fim ela
+diz se pode confiar nos números, corrige o que estiver errado e grava um resumo. Mande esse
+resumo ao seu mentor.
+
 **Nos primeiros dias:**
 
 1. **Espere a primeira sincronização.** Pedidos, pagamentos, cobranças e publicidade chegam em

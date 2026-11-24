@@ -60,9 +60,11 @@ Faça nesta ordem:
 
 1. **Espere a primeira sincronização.** Pedidos, pagamentos, cobranças e publicidade chegam em
    minutos ou horas, conforme o volume. Acompanhe em Configurações > Integrações.
-2. **Cadastre o custo dos produtos.** Em Produtos / SKUs, exporte a planilha, preencha o custo e
+2. **Valide os números de um mês fechado** com a IA (`APURACAO.md`): ela cruza o sistema com o
+   Mercado Livre e com o extrato do Mercado Pago antes de você confiar em qualquer resultado.
+3. **Cadastre o custo dos produtos.** Em Produtos / SKUs, exporte a planilha, preencha o custo e
    importe de volta. Os produtos aparecem sozinhos conforme as vendas chegam.
-3. **Cadastre a alíquota de imposto** da empresa, em Configurações.
+4. **Cadastre a alíquota de imposto** da empresa, em Configurações.
 
 Enquanto faltar custo ou alíquota, o resultado aparece **maior do que é**. O sistema avisa
 quantas vendas estão sem custo, para você não decidir com número inflado.
