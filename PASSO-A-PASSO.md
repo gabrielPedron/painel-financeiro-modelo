@@ -18,8 +18,8 @@ Faça com antecedência: o item 4 pode levar dias.
    dados. Cada pessoa pode ter 2 projetos gratuitos: se você já tem 2, crie a conta com outro e-mail.
 4. **Mercado Livre.** Entre em https://developers.mercadolivre.com.br com a **conta titular da
    loja** (não a de um funcionário) e crie uma aplicação. Se pedir um endereço de redirect, use
-   `https://www.mercadolivre.com.br` por enquanto: na call a IA te dá o certo. O Mercado Livre pode
-   analisar o pedido por alguns dias.
+   `https://www.mercadolivre.com.br` por enquanto: na call a IA te dá o certo. O Mercado Livre
+   analisa o pedido, e a aprovação pode levar até 10 dias: faça isso primeiro.
 5. **No computador:**
    - Instale o **Claude** (app de computador) em https://claude.ai/download e entre na sua conta.
      Se ele pedir para instalar o Git, aceite.

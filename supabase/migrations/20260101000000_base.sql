@@ -8808,6 +8808,17 @@ ALTER TABLE public.telegram_config ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_screen_access ENABLE ROW LEVEL SECURITY;
 
 --
+-- Permissões iguais às do sistema de origem: zera o que o projeto novo dá por padrão a anon e
+-- authenticated; as concessões abaixo devolvem só o que a origem tem.
+--
+
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon, authenticated;
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE ALL ON TABLES FROM anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE ALL ON SEQUENCES FROM anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE ALL ON FUNCTIONS FROM anon;
+
+--
 -- Name: SCHEMA public; Type: ACL; Schema: -; Owner: -
 --
 

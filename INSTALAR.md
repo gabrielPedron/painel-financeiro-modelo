@@ -129,8 +129,10 @@ Monte os links com o `<ref>` e o `<app>` reais e mande numa mensagem só:
 > 5. Em https://developers.mercadolivre.com.br, abra a sua aplicação e edite:
 >    - **URI de redirect:** `<app>/api/ml/callback`
 >    - **Permissões**, todas em **somente leitura**: Usuários, Vendas e envios, Faturamento,
->      Publicidade, Métricas do negócio, Publicação e sincronização, Comunicação pré e pós-venda.
->      Marque também o **acesso offline**. Salve.
+>      Publicidade, Métricas do negócio, Publicação e sincronização, Comunicação pré e pós-venda,
+>      e a de **pagamentos do Mercado Pago**, se aparecer. Marque também o **acesso offline**.
+>    - **PKCE**, se aparecer: deixe **desligado**.
+>    - Salve.
 >
 > No fim, me mande aqui: a chave `sb_publishable_`, o e-mail do passo 3 e o seu nome.
 
@@ -212,4 +214,5 @@ Se depois de horas os pedidos chegam e os pagamentos não, é o caso da última 
 | A conexão do Mercado Livre volta com erro de `redirect_uri` | O endereço cadastrado na aplicação difere do `<app>` | Deixar idênticos, letra por letra |
 | O link de "Esqueci minha senha" abre `localhost` | Site URL ou Redirect URL sem salvar | Refazer o item 4 da rodada 3 |
 | `PA_UNAUTHORIZED_RESULT_FROM_POLICIES` na sincronização | Falta uma permissão na aplicação do Mercado Livre | Marcar a permissão em leitura e conectar de novo |
-| Pagamentos não sincronizam, o resto sim | A aplicação nova pode não ter acesso às APIs do Mercado Pago | Parar e avisar o mentor: é um caso ainda não confirmado |
+| Pagamentos não sincronizam, o resto sim | A aplicação não tem a permissão de leitura de pagamentos do Mercado Pago. Na aplicação que já funciona, ela aparece como `urn:mp:online:payments/read-only` | Marcar a permissão de pagamentos em leitura, conectar de novo e esperar a fila; se a permissão não existir no formulário, parar e avisar o mentor |
+| A conexão volta com erro de `code_verifier` ou PKCE | A aplicação está com PKCE ligado e o sistema não usa PKCE | Desligar o PKCE na aplicação e conectar de novo |

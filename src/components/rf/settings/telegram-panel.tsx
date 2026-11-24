@@ -202,7 +202,8 @@ function ConfigCard() {
             placeholder="-1001234567890"
           />
           <p className="text-xs text-muted-foreground">
-            Adicione o bot ao grupo e cole aqui o ID (grupos têm ID negativo).
+            Adicione o bot ao grupo e cole aqui o ID (grupos têm ID negativo). Para mandar a um tópico do grupo,
+            acrescente dois-pontos e o número do tópico (o do meio no link de uma mensagem dele): -1001234567890:146.
           </p>
         </div>
 

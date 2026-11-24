@@ -74,7 +74,7 @@ batem podem esconder erros que se anulam. Diferença de até R$ 0,05 por pedido 
 | **Dado faltando** | Pedidos ou pagamentos que não chegaram | **Sincronizar agora** na tela Mercado Livre, espere e cruze de novo |
 | **Cadastro do dono** | Custo de produto ou alíquota faltando | Diga ao dono o que cadastrar e onde |
 | **Cálculo** | O sistema soma, classifica ou desconta errado | Corrija (abaixo) |
-| **Pagamentos não chegam nenhum** | Pedidos chegam, `mp_payments` vazio | Pare e avise o mentor: é um caso ainda não confirmado |
+| **Pagamentos não chegam nenhum** | Pedidos chegam, `mp_payments` vazio | Falta a permissão de pagamentos do Mercado Pago na aplicação: veja [Se travar](INSTALAR.md#se-travar) |
 
 ## Corrigir um erro de cálculo
 

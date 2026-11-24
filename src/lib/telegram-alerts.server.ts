@@ -4,6 +4,7 @@
 // e reenfileira envios com falha para nova tentativa.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { destinoTelegram } from "./telegram-destino.ts";
 
 export type AlertType = "margem_baixa" | "prejuizo" | "anuncio_negativo" | "sem_custo_resumo";
 
@@ -82,11 +83,14 @@ function todaySP(): string {
 async function tgSend(chatId: string, text: string): Promise<void> {
   const token = botToken();
   if (!token) throw new Error("TELEGRAM_BOT_TOKEN não configurado");
+  // "-100…:146" manda ao tópico 146 do grupo (telegram-destino.ts).
+  const destino = destinoTelegram(chatId);
+  if (!destino) throw new Error("Destino do Telegram inválido: use o ID do chat, ou ID:tópico (ex.: -1001234567890:146)");
   const res = await fetch(`${TG_API}/bot${token}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      chat_id: chatId,
+      ...destino,
       text,
       parse_mode: "HTML",
       disable_web_page_preview: true,
